@@ -1,6 +1,9 @@
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Talabat.Core.Reposatory;
 using Talabat.Reposatory.Data.Config;
+using Talabat.Reposatory.Repository;
 
 namespace Talabat
 {
@@ -15,10 +18,14 @@ namespace Talabat
             builder.Services.AddDbContext<StoreContext>(options =>
           options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+
             // Add services to the container.
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
             using var scope = builder.Services.BuildServiceProvider().CreateScope();
             
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -35,7 +42,7 @@ namespace Talabat
             {
                 logger.LogError(ex, "An error occurred seeding the DB.");
             }
-          //  builder.Services.AddScoped(typeof(IGenenaricRepositry<>), typeof(GenericRepositry<>));
+           builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
 
           
             var app = builder.Build(); 
@@ -44,6 +51,9 @@ namespace Talabat
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+
                 app.MapOpenApi();
             }
 
