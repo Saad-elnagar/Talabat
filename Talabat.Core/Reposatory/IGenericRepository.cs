@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Talabat.Core.Entitys;
+using Talabat.Reposatory.Specification;
 
 namespace Talabat.Core.Reposatory
 {
@@ -11,7 +12,10 @@ namespace Talabat.Core.Reposatory
     {
 
         Task<T> GetByIdAsync(int id);
-        Task<IReadOnlyList<T>> GetAllAsync();
-     
+        Task<IEnumerable<T>> GetAllAsync();
+
+        Task<T> GetByIdWithSpecAsync(ISpecification<T> spec);
+        Task<IEnumerable<T>> GetAllWithSpecAsync(ISpecification<T> spec);
+
     }
 }

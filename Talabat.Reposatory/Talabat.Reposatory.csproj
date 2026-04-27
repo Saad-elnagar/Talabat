@@ -7,6 +7,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Abp" Version="10.3.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
@@ -24,10 +25,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Talabat.Core\Talabat.Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Data\DataSeed\" />
 	</ItemGroup>
 
 </Project>

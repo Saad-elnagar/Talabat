@@ -3,13 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Talabat.Core.Reposatory;
 using Talabat.Reposatory.Data.Config;
+using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Repository;
 
 namespace Talabat
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +36,7 @@ namespace Talabat
 
 
                 context.Database.Migrate(); // This will apply any pending migrations to the database. Make sure you have created migrations using 'dotnet ef migrations add MigrationName' before running the application.
-               // await StoreContextSeed.SeedAsync(context); // This will seed the database with initial data if necessary.
+                await StoreContextSeed.SeedAsync(context); // This will seed the database with initial data if necessary.
             }
 
             catch (Exception ex)
@@ -47,7 +48,7 @@ namespace Talabat
           
             var app = builder.Build(); 
             #endregion
-
+                
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
