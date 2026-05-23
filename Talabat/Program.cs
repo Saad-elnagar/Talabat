@@ -1,7 +1,7 @@
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Talabat.Core.Reposatory;
+using Talabat.Helper;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Repository;
@@ -44,9 +44,10 @@ namespace Talabat
                 logger.LogError(ex, "An error occurred seeding the DB.");
             }
            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
+            //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(cfg => { }, typeof(MapeProfile));
 
-          
-            var app = builder.Build(); 
+            var app = builder.Build();
             #endregion
                 
             // Configure the HTTP request pipeline.
