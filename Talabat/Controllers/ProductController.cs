@@ -5,6 +5,7 @@ using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
 using Talabat.Core.Specification;
 using Talabat.Dto;
+using Talabat.Erorr;
 using Talabat.Reposatory.Repository;
 
 namespace Talabat.Controllers
@@ -44,13 +45,14 @@ namespace Talabat.Controllers
         public async Task<ActionResult<IEnumerable<ProductResultToDto>>> GetProductSpec()
         {
             var products = await _productRepo.GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification());
+            
             return Ok(_mapper.Map<IEnumerable<ProductResultToDto>>(products));
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductResultToDto>> GetProductSpec(int id)
         {
             var product = await _productRepo.GetByIdWithSpecAsync(new ProductWithTypesAndBrandsSpecification(id));
-            if (product == null) return NotFound();
+            if (product == null) return NotFound(new APIRespose(404));
             return Ok(_mapper.Map<ProductResultToDto>(product));
 
         }
