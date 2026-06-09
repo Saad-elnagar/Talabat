@@ -14,11 +14,15 @@ namespace Talabat.Controllers
     public class ProductController : BaseController
     {
         private readonly IGenericRepository<Product> _productRepo;
+        private readonly IGenericRepository<ProductBrand> _productBrandRepo;
+        private readonly IGenericRepository<ProductType> _productTypeRepo;
         private readonly IMapper _mapper;
 
-        public ProductController(IGenericRepository<Product> productRepo , IMapper mapper)
+        public ProductController(IGenericRepository<Product> productRepo ,IGenericRepository<ProductBrand> productBrandRepo ,IGenericRepository<ProductType> ProductTypeRepo, IMapper mapper)
         {
             _productRepo = productRepo;
+            _productBrandRepo = productBrandRepo;
+            _productTypeRepo = ProductTypeRepo;
             _mapper = mapper;
         }
 
@@ -42,10 +46,10 @@ namespace Talabat.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult<IEnumerable<ProductResultToDto>>> GetProductSpec()
+        public async Task<ActionResult<IEnumerable<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
         {
-            var products = await _productRepo.GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification());
-            
+            var products = await _productRepo.GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification(specParams));
+
             return Ok(_mapper.Map<IEnumerable<ProductResultToDto>>(products));
         }
         [HttpGet("{id}")]
@@ -55,6 +59,22 @@ namespace Talabat.Controllers
             if (product == null) return NotFound(new APIRespose(404));
             return Ok(_mapper.Map<ProductResultToDto>(product));
 
+        }
+
+
+
+        [HttpGet("brands")]
+        public async Task<ActionResult<IEnumerable<ProductBrand>>> GetProductBrands()
+        {
+            var brands = await _productBrandRepo.GetAllAsync();
+            return Ok(brands);
+        }
+
+        [HttpGet("types")]  
+        public async Task<ActionResult<IEnumerable <ProductType>>> GetProductType()
+        {
+            var type = await _productTypeRepo.GetAllAsync();
+            return Ok(type);
         }
     }
 }

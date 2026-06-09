@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Talabat.Core.Reposatory;
 using Talabat.Erorr;
+using Talabat.Extension;
 using Talabat.Helper;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
@@ -46,33 +47,18 @@ namespace Talabat
             {
                 logger.LogError(ex, "An error occurred seeding the DB.");
             }
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
-            //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddAutoMapper(cfg => { }, typeof(MapeProfile));
 
-
-            builder.Services.Configure<ApiBehaviorOptions>(Options =>
-            {
-
-                Options.InvalidModelStateResponseFactory = (actionContext) =>
-                {
-                    var errors = actionContext.ModelState.Where(e => e.Value.Errors.Count > 0)
-                        .SelectMany(x => x.Value.Errors)
-                        .Select(x => x.ErrorMessage).ToArray();
-
-                    return new BadRequestObjectResult(new ValidationErorrRespose(400, "Validation errors occurred", errors));
-                };
-
-
-            });
+            AplicationServiceExtension.AplicationServices(builder.Services);
+           
+            
+            
+            
 
 
 
-
-
-                var app = builder.Build();
+            var app = builder.Build();
             #endregion
-
+             
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

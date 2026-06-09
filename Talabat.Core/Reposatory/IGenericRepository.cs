@@ -12,10 +12,10 @@ namespace Talabat.Core.Reposatory
     {
 
         Task<T> GetByIdAsync(int id);
-        Task<IEnumerable<T>> GetAllAsync();
+        Task<IReadOnlyList<T>> GetAllAsync();
 
         Task<T> GetByIdWithSpecAsync(ISpecification<T> spec);
-        Task<IEnumerable<T>> GetAllWithSpecAsync(ISpecification<T> spec);
+        Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
 
     }
 }

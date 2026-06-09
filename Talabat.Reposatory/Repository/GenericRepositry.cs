@@ -20,7 +20,7 @@ namespace Talabat.Reposatory.Repository
         {
             _context = context;
         }
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IReadOnlyList<T>> GetAllAsync()
         {
             try
             {
@@ -64,11 +64,11 @@ namespace Talabat.Reposatory.Repository
             }
         }
 
-        public async Task<IEnumerable<T>> GetAllWithSpecAsync(ISpecification<T> spec)
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
         {
             try
             {
-                return await ApplySpecification (spec).ToListAsync();
+                return await ApplySpecification(spec).ToListAsync();
 
 
             }
@@ -78,6 +78,7 @@ namespace Talabat.Reposatory.Repository
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
         }
+
 
         public IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
