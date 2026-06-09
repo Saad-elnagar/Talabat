@@ -6,6 +6,7 @@ using Talabat.Core.Reposatory;
 using Talabat.Core.Specification;
 using Talabat.Dto;
 using Talabat.Erorr;
+using Talabat.Helper;
 using Talabat.Reposatory.Repository;
 
 namespace Talabat.Controllers
@@ -18,7 +19,7 @@ namespace Talabat.Controllers
         private readonly IGenericRepository<ProductType> _productTypeRepo;
         private readonly IMapper _mapper;
 
-        public ProductController(IGenericRepository<Product> productRepo ,IGenericRepository<ProductBrand> productBrandRepo ,IGenericRepository<ProductType> ProductTypeRepo, IMapper mapper)
+        public ProductController(IGenericRepository<Product> productRepo, IGenericRepository<ProductBrand> productBrandRepo, IGenericRepository<ProductType> ProductTypeRepo, IMapper mapper)
         {
             _productRepo = productRepo;
             _productBrandRepo = productBrandRepo;
@@ -46,12 +47,19 @@ namespace Talabat.Controllers
 
         [HttpGet]
 
-        public async Task<ActionResult<IEnumerable<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
+        public async Task<ActionResult<Pagination<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
         {
             var products = await _productRepo.GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification(specParams));
 
-            return Ok(_mapper.Map<IEnumerable<ProductResultToDto>>(products));
+            var data = _mapper.Map<IReadOnlyList<ProductResultToDto>>(products);
+            var count = await _productRepo.GetCountAsync(new ProductWithFiltersForCountSpecification(specParams));
+
+            return Ok(new Pagination<ProductResultToDto>(specParams.PageIndex.Value, specParams.PageSize.Value,count ,data));
+
         }
+
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductResultToDto>> GetProductSpec(int id)
         {
@@ -70,8 +78,8 @@ namespace Talabat.Controllers
             return Ok(brands);
         }
 
-        [HttpGet("types")]  
-        public async Task<ActionResult<IEnumerable <ProductType>>> GetProductType()
+        [HttpGet("types")]
+        public async Task<ActionResult<IEnumerable<ProductType>>> GetProductType()
         {
             var type = await _productTypeRepo.GetAllAsync();
             return Ok(type);

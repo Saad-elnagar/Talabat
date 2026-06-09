@@ -80,6 +80,20 @@ namespace Talabat.Reposatory.Repository
         }
 
 
+        public async Task<int> GetCountAsync(ISpecification<T> spec)
+        {
+            try
+            {
+                return await ApplySpecification(spec).CountAsync();
+            }
+            catch (Exception ex)
+            {
+                
+                throw new Exception("An error occurred while counting data.", ex);
+            }
+        }
+
+
         public IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
             return Evalutore<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
