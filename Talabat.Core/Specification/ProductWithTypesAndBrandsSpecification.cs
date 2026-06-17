@@ -9,7 +9,7 @@ namespace Talabat.Core.Specification
         public ProductWithTypesAndBrandsSpecification(ProductSpecParams specParams)
         {
             Criteria = p =>
-                 (string.IsNullOrEmpty(p.search) || p.Name.ToLower().Contains(p.search)) &&
+                 (string.IsNullOrEmpty(specParams.search) || p.Name.ToLower().Contains(specParams.search)) &&
                 (!specParams.BrandId.HasValue || p.ProductBrandId == specParams.BrandId.Value) &&
                 (!specParams.TypeId.HasValue || p.ProductTypeId == specParams.TypeId.Value);
             Includes.Add(p => p.ProductBrand);
