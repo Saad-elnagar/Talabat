@@ -6,6 +6,7 @@
         public int PageSize { get; set; }
         public int Count { get; set; }
         public IReadOnlyList<T> Data { get; set; }
+        public string search { get; set; }
 
 
         public Pagination(int pageIndex, int pageSize, int count, IReadOnlyList<T> data) {

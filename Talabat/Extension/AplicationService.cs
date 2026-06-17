@@ -14,6 +14,7 @@ namespace Talabat.Extension
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
             //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddAutoMapper(cfg => { }, typeof(MapeProfile));
+            services.AddScoped(typeof(IBasketRepository), typeof(IBasketRepository));
 
 
             services.Configure<ApiBehaviorOptions>(Options =>

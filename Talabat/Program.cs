@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using Talabat.Core.Reposatory;
 using Talabat.Erorr;
 using Talabat.Extension;
@@ -49,16 +50,23 @@ namespace Talabat
             }
 
             AplicationServiceExtension.AplicationServices(builder.Services);
-           
-            
-            
-            
+
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>(options =>
+            {
+                var connection = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(connection);
+            });
+
+
+
+
 
 
 
             var app = builder.Build();
             #endregion
-             
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

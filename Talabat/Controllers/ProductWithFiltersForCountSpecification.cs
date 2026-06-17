@@ -8,6 +8,7 @@ namespace Talabat.Controllers
     {
 
         public ProductWithFiltersForCountSpecification(ProductSpecParams specParams) : base(p =>
+              (string.IsNullOrEmpty(p.search) || p.Name.ToLower().Contains(p.search)) &&
             (!specParams.BrandId.HasValue || p.ProductBrandId == specParams.BrandId.Value) &&
             (!specParams.TypeId.HasValue || p.ProductTypeId == specParams.TypeId.Value))
         {
