@@ -4,6 +4,7 @@ using Talabat.Core.Reposatory;
 using Talabat.Erorr;
 using Talabat.Helper;
 using Talabat.Reposatory.Repository;
+using Talabat.Repository.Repository;
 
 namespace Talabat.Extension
 {
@@ -14,7 +15,7 @@ namespace Talabat.Extension
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
             //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddAutoMapper(cfg => { }, typeof(MapeProfile));
-            services.AddScoped(typeof(IBasketRepository), typeof(IBasketRepository));
+            services.AddScoped(typeof(IBasketRepository), typeof(BasketRepository));
 
 
             services.Configure<ApiBehaviorOptions>(Options =>
