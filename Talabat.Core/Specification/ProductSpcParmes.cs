@@ -21,7 +21,11 @@ namespace Talabat.Core.Specification
             get { return pageSize; }
             set { pageSize = (value.HasValue && value.Value > MaxPageSize) ? MaxPageSize : value; }
         }
-        public string? search;
+        public string? search { get; set; }
+
+
+        // test
+        public int? Needprice { get; set; }
 
        
 

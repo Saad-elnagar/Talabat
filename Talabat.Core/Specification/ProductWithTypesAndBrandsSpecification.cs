@@ -11,6 +11,7 @@ namespace Talabat.Core.Specification
             Criteria = p =>
                  (string.IsNullOrEmpty(specParams.search) || p.Name.ToLower().Contains(specParams.search)) &&
                 (!specParams.BrandId.HasValue || p.ProductBrandId == specParams.BrandId.Value) &&
+                   (!specParams.Needprice.HasValue || p.Price == specParams.Needprice.Value) &&
                 (!specParams.TypeId.HasValue || p.ProductTypeId == specParams.TypeId.Value);
             Includes.Add(p => p.ProductBrand);
             Includes.Add(p => p.ProductType);

@@ -9,6 +9,7 @@ using Talabat.Extension;
 using Talabat.Helper;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
+using Talabat.Reposatory.Identity;
 using Talabat.Reposatory.Repository;
 
 namespace Talabat
@@ -24,6 +25,14 @@ namespace Talabat
             builder.Services.AddDbContext<StoreContext>(options =>
           options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+
+            builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Identity"),
+                   b => b.MigrationsAssembly("Talabat")
+                   );
+            });
 
 
             // Add services to the container.
