@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabat.Core.Entitys.Identity;
@@ -12,29 +11,30 @@ using Talabat.Repository.Repository;
 
 namespace Talabat.Extension
 {
-    class AplicationServiceExtension
+    public static class AplicationServiceExtension  // ✅ public static
     {
-        public static async Task<IServiceCollection> AplicationServicesAsync(IServiceCollection services)
+        public static IServiceCollection AplicationServices(this IServiceCollection services)  // ✅ مش async
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
-            //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddAutoMapper(cfg => { }, typeof(MapeProfile));
-            services.AddScoped(typeof(IBasketRepository), typeof(BasketRepository));
+            // services.AddScoped<IUnitOfWork, UnitOfWork>();
 
- 
-            services.Configure<ApiBehaviorOptions>(Options =>
+            services.AddAutoMapper(cfg => { }, typeof(MapeProfile)); // ✅ Syntax صح
+
+            services.AddScoped<IBasketRepository, BasketRepository>();  // ✅ مش typeof لو interface
+
+            services.Configure<ApiBehaviorOptions>(options =>
             {
-
-                Options.InvalidModelStateResponseFactory = (actionContext) =>
+                options.InvalidModelStateResponseFactory = actionContext =>
                 {
-                    var errors = actionContext.ModelState.Where(e => e.Value.Errors.Count > 0)
+                    var errors = actionContext.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
                         .SelectMany(x => x.Value.Errors)
-                        .Select(x => x.ErrorMessage).ToArray();
+                        .Select(x => x.ErrorMessage)
+                        .ToArray();
 
-                    return new BadRequestObjectResult(new ValidationErorrRespose(400, "Validation errors occurred", errors));
+                    return new BadRequestObjectResult(
+                        new ValidationErorrRespose(400, "Validation errors occurred", errors));
                 };
-
-
             });
 
             return services;

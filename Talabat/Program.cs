@@ -1,19 +1,12 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Talabat.Core.Entitys.Identity;
-using Talabat.Core.Reposatory;
-using Talabat.Erorr;
 using Talabat.Extension;
-using Talabat.Helper;
+using Talabat.Reposatory.Data;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Identity;
-
-using Talabat.Reposatory.Repository;
 
 namespace Talabat
 {
@@ -25,99 +18,94 @@ namespace Talabat
 
             #region ConfigServices
 
+            // DbContexts
             builder.Services.AddDbContext<StoreContext>(options =>
-          options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddDbContext<AppIdentityDbContext>(options =>
-            {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Identity"),
-                   b => b.MigrationsAssembly("Talabat")
-                   );
-            });
+                    b => b.MigrationsAssembly("Talabat")));
 
-
-            // Add services to the container.
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-            builder.Services.AddIdentity<User, IdentityRole>(Options =>
+            // Identity
+            builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
 
-                Options.Password.RequireDigit = true;
-                Options.Password.RequireUppercase = true;
-              }  )
-                .AddEntityFrameworkStores<AppIdentityDbContext>();
-            using var scope = builder.Services.BuildServiceProvider().CreateScope();
-
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-          
-
-
-            try
-            {
-                var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
-
-
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-
-                await IdentityDbContextSeed.SeedUserAsync(userManager);
-
-
-
-                var identity = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
-                await identity.Database.MigrateAsync();
-
-
-                context.Database.Migrate(); // This will apply any pending migrations to the database. Make sure you have created migrations using 'dotnet ef migrations add MigrationName' before running the application.
-                await StoreContextSeed.SeedAsync(context); // This will seed the database with initial data if necessary.
-            }
-
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred seeding the DB.");
-            }
-
-            AplicationServiceExtension.AplicationServicesAsync(builder.Services);
-
-
-            builder.Services.AddSingleton<IConnectionMultiplexer>(options =>
+            // Redis
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
                 var connection = builder.Configuration.GetConnectionString("Redis");
                 return ConnectionMultiplexer.Connect(connection);
             });
 
+            // Application Services (Repositories, AutoMapper, etc.)
+            builder.Services.AplicationServices();  // ✅ بقى extension method عادي
 
+            // Controllers & Swagger
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-            // Apply migrations at startup
-            var app = builder.Build();
             #endregion
 
-            // Configure the HTTP request pipeline.
+            var app = builder.Build();
+
+            #region Database Seeding
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                try
+                {
+                    // 1. StoreContext
+                    var storeContext = services.GetRequiredService<StoreContext>();
+                    await storeContext.Database.MigrateAsync();
+                    await StoreContextSeed.SeedAsync(storeContext);
+
+                    // 2. IdentityDbContext
+                    var identityContext = services.GetRequiredService<AppIdentityDbContext>();
+                    await identityContext.Database.MigrateAsync();
+
+                    // 3. Seed Users
+                    var userManager = services.GetRequiredService<UserManager<User>>();
+                    await IdentityDbContextSeed.SeedUserAsync(userManager);
+
+                    logger.LogInformation("Database seeded successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred while seeding the database.");
+                }
+            }
+
+            #endregion
+
+            #region Middleware Pipeline
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-
-                app.MapOpenApi();
             }
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
-
-            app.UseAuthorization();
             app.UseStaticFiles();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 
-            app.Run();
+            #endregion
+
+            await app.RunAsync();
         }
     }
 }
-
-
