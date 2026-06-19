@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Reposatory;
 using Talabat.Erorr;
 using Talabat.Extension;
@@ -10,6 +12,7 @@ using Talabat.Helper;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Identity;
+
 using Talabat.Reposatory.Repository;
 
 namespace Talabat
@@ -41,12 +44,33 @@ namespace Talabat
             builder.Services.AddOpenApi();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddIdentity<User, IdentityRole>(Options =>
+            {
+
+                Options.Password.RequireDigit = true;
+                Options.Password.RequireUppercase = true;
+              }  )
+                .AddEntityFrameworkStores<AppIdentityDbContext>();
             using var scope = builder.Services.BuildServiceProvider().CreateScope();
 
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+          
+
+
             try
             {
                 var context = scope.ServiceProvider.GetRequiredService<StoreContext>();
+
+
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+                await IdentityDbContextSeed.SeedUserAsync(userManager);
+
+
+
+                var identity = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
+                await identity.Database.MigrateAsync();
 
 
                 context.Database.Migrate(); // This will apply any pending migrations to the database. Make sure you have created migrations using 'dotnet ef migrations add MigrationName' before running the application.
@@ -58,7 +82,7 @@ namespace Talabat
                 logger.LogError(ex, "An error occurred seeding the DB.");
             }
 
-            AplicationServiceExtension.AplicationServices(builder.Services);
+            AplicationServiceExtension.AplicationServicesAsync(builder.Services);
 
 
             builder.Services.AddSingleton<IConnectionMultiplexer>(options =>
@@ -69,10 +93,7 @@ namespace Talabat
 
 
 
-
-
-
-
+            // Apply migrations at startup
             var app = builder.Build();
             #endregion
 
@@ -86,6 +107,7 @@ namespace Talabat
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
 
             app.UseAuthorization();
             app.UseStaticFiles();
