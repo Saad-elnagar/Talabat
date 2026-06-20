@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;  // ← جديد
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using Talabat.Core.Entitys.Identity;
+using Talabat.Core.Service;  // ← عشان ITokenService
 using Talabat.Extension;
 using Talabat.Reposatory.Data;
 using Talabat.Reposatory.Data.Config;
@@ -18,7 +21,6 @@ namespace Talabat
 
             #region ConfigServices
 
-            // DbContexts
             builder.Services.AddDbContext<StoreContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -26,7 +28,6 @@ namespace Talabat
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Identity"),
                     b => b.MigrationsAssembly("Talabat")));
 
-            // Identity
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -35,29 +36,46 @@ namespace Talabat
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequiredLength = 6;
             })
-            .AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
+            .AddEntityFrameworkStores<AppIdentityDbContext>();
 
-            // Redis
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
                 var connection = builder.Configuration.GetConnectionString("Redis");
                 return ConnectionMultiplexer.Connect(connection);
             });
 
-            // Application Services (Repositories, AutoMapper, etc.)
-            builder.Services.AplicationServices();  // ✅ بقى extension method عادي
+            builder.Services.AplicationServices();  // ⚠️ تأكد إن الاسم صح (Application مش Aplication)
 
-            // Controllers & Swagger
+            builder.Services.AddScoped<ITokenService, TokenService>();  // ← جديد
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // ← حطيت JwtBearerDefaults.AuthenticationScheme
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+                    };
+                });
+
+            builder.Services.AddAuthorization();  // ← اختياري بس كويس تضيفه
 
             #endregion
 
             var app = builder.Build();
 
             #region Database Seeding
-
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -65,16 +83,13 @@ namespace Talabat
 
                 try
                 {
-                    // 1. StoreContext
                     var storeContext = services.GetRequiredService<StoreContext>();
                     await storeContext.Database.MigrateAsync();
                     await StoreContextSeed.SeedAsync(storeContext);
 
-                    // 2. IdentityDbContext
                     var identityContext = services.GetRequiredService<AppIdentityDbContext>();
                     await identityContext.Database.MigrateAsync();
 
-                    // 3. Seed Users
                     var userManager = services.GetRequiredService<UserManager<User>>();
                     await IdentityDbContextSeed.SeedUserAsync(userManager);
 
@@ -85,11 +100,9 @@ namespace Talabat
                     logger.LogError(ex, "An error occurred while seeding the database.");
                 }
             }
-
             #endregion
 
             #region Middleware Pipeline
-
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -98,11 +111,12 @@ namespace Talabat
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseAuthentication();
-            app.UseAuthorization();
 
-            app.MapControllers();
+            app.UseRouting();           // ← جديد
+            app.UseAuthentication();    // ← بعد Routing
+            app.UseAuthorization();     // ← بعد Authentication
 
+            app.MapControllers();       // ← في الآخر
             #endregion
 
             await app.RunAsync();

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Reposatory;
+using Talabat.Core.Service;
 using Talabat.Erorr;
 using Talabat.Helper;
 using Talabat.Reposatory.Identity;
@@ -21,6 +22,7 @@ namespace Talabat.Extension
             services.AddAutoMapper(cfg => { }, typeof(MapeProfile)); // ✅ Syntax صح
 
             services.AddScoped<IBasketRepository, BasketRepository>();  // ✅ مش typeof لو interface
+            services.AddScoped<ITokenService,TokenService>();  // ✅ مش typeof لو interface
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
