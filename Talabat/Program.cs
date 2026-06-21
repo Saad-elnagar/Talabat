@@ -1,6 +1,8 @@
+using Abp.Domain.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;  // ← جديد
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using Talabat.Core.Entitys.Identity;
@@ -69,7 +71,15 @@ namespace Talabat
                     };
                 });
 
-            builder.Services.AddAuthorization();  
+            builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("JwtOnly", policy =>
+                {
+                    policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+                    policy.RequireAuthenticatedUser();
+                });
+            });
 
             #endregion
 

@@ -67,7 +67,7 @@ namespace Talabat.Controllers
         //  [Authorize]
 
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize( Policy = "JwtOnly" )]
         [HttpGet("GetCurrentUser")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
