@@ -9,7 +9,7 @@ using Talabat.Reposatory.Identity;
 
 #nullable disable
 
-namespace Talabat.Identity.Migration
+namespace Talabat.Identity.Migrations
 {
     [DbContext(typeof(AppIdentityDbContext))]
     [Migration("20260618192250_Identity")]

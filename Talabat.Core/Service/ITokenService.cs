@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Talabat.Core.Entitys.Identity;
+using Talabat.Dto;
 
 namespace Talabat.Core.Service
 {
     public interface ITokenService
     {
 
-        public Task<string> GenerateTokenAsync(User user);
+        public Task<TokenDto> GenerateTokenAsync(User user);
+        Task<TokenDto> RefreshTokenAsync(string token, string refreshToken);
+
 
 
     }

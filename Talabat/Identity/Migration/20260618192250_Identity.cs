@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Talabat.Identity.Migration
+namespace Talabat.Identity.Migrations
 {
     /// <inheritdoc />
     public partial class Identity : Microsoft.EntityFrameworkCore.Migrations.Migration

@@ -8,7 +8,7 @@ using Talabat.Reposatory.Identity;
 
 #nullable disable
 
-namespace Talabat.Identity.Migration
+namespace Talabat.Identity.Migrations
 {
     [DbContext(typeof(AppIdentityDbContext))]
     partial class AppIdentityDbContextModelSnapshot : ModelSnapshot
@@ -236,6 +236,13 @@ namespace Talabat.Identity.Migration
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
