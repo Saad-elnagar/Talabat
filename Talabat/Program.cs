@@ -69,7 +69,7 @@ namespace Talabat
                     };
                 });
 
-            builder.Services.AddAuthorization();  // ← اختياري بس كويس تضيفه
+            builder.Services.AddAuthorization();  
 
             #endregion
 

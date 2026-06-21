@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Service;  // <-- أضف ده
 using Talabat.Dto;
@@ -11,12 +15,12 @@ namespace Talabat.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        private readonly ITokenService _tokenService;  // <-- أضف ده
+        private readonly ITokenService _tokenService;
 
         public AccountController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            ITokenService tokenService)  // <-- أضف ده
+            ITokenService tokenService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,7 +40,7 @@ namespace Talabat.Controllers
 
             return Ok(await _tokenService.GenerateTokenAsync(user));
         }
-        
+
 
         [HttpPost("register")]
         public async Task<ActionResult<TokenDto>> Register(RegisterDto registerDto)
@@ -53,12 +57,38 @@ namespace Talabat.Controllers
 
             if (!result.Succeeded)
             {
-                // ← هنا هنرجع الـ Errors الحقيقية
+
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 return BadRequest(new APIRespose(400, errors));
             }
 
             return Ok(await _tokenService.GenerateTokenAsync(user));
+        }
+        //  [Authorize]
+
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("GetCurrentUser")]
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized(new APIRespose(401, "Email claim not found"));
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return Unauthorized(new APIRespose(401, "User not found"));
+             
+
+            var token = await _tokenService.GenerateTokenAsync(user);
+            return Ok(new UserDto
+            {
+                DisplayName = user.DisplayName,
+                Email = user.Email,
+                Token = token.Token
+            });
         }
     }
 }
