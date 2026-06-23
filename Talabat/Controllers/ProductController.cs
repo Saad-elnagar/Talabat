@@ -68,7 +68,7 @@ namespace Talabat.Controllers
             return Ok(_mapper.Map<ProductResultToDto>(product));
 
         }
-
+                    
 
 
         [HttpGet("brands")]

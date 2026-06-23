@@ -9,9 +9,9 @@ namespace Talabat.Core.Reposatory
 {
     public   interface  IBasketRepository 
     {
-         Task<CustomarBasket?> GetCustomerAsync(string baketid);
+         Task<CustomerBasket?> GetCustomerAsync(string baketid);
 
-        Task<CustomarBasket?> UpdateCustomerBasketAsync(CustomarBasket basket);
+        Task<CustomerBasket?> UpdateCustomerBasketAsync(CustomerBasket basket);
 
         Task<bool> DeleteCustomerBasketAsync(string baketid);
          

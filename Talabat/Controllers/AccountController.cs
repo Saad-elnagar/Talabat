@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Claims;
+using Talabat.Core.Entitys;
 using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Service;  // <-- أضف ده
 using Talabat.Dto;
@@ -16,15 +20,18 @@ namespace Talabat.Controllers
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IMapper _mapper;
 
         public AccountController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            ITokenService tokenService)
+            ITokenService tokenService,
+            IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
@@ -67,7 +74,7 @@ namespace Talabat.Controllers
         //  [Authorize]
 
 
-        [Authorize( Policy = "JwtOnly" )]
+        [Authorize(Policy = "JwtOnly")]
         [HttpGet("GetCurrentUser")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
@@ -80,7 +87,7 @@ namespace Talabat.Controllers
 
             if (user == null)
                 return Unauthorized(new APIRespose(401, "User not found"));
-             
+
 
             var token = await _tokenService.GenerateTokenAsync(user);
             return Ok(new UserDto
@@ -90,5 +97,50 @@ namespace Talabat.Controllers
                 Token = token.Token
             });
         }
+
+
+        [Authorize(Policy = "JwtOnly")]
+        [HttpGet("adderss")]
+        public async Task<ActionResult<AddressDto>> GetUserAddress()
+        {
+
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized(new APIRespose(401, "Email claim not found"));
+
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return Unauthorized(new APIRespose(401, "User not found"));
+
+            var userWithAddress = await _userManager.Users
+           .Include(u => u.address)
+           .FirstOrDefaultAsync(u => u.Id == user.Id);
+            var address = _mapper.Map<Address, AddressDto>(user.address);
+
+            return Ok(address);
+
+
+
+
+        }
+
+
+        
+
+        //public async Task<ActionResult<AddressDto>> UpdateUserAddress(AddressDto addressDto)
+        //{
+        //    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        //    if (string.IsNullOrEmpty(email))
+        //        return Unauthorized(new APIRespose(401, "Email claim not found"));
+
+        //    var user = await _userManager.FindByEmailAsync(email);
+        //    if (user == null)
+        //        return Unauthorized(new APIRespose(401, "User not found"));
+
+
+        //}
+
     }
 }

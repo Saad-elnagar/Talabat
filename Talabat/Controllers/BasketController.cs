@@ -1,46 +1,68 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
-using Talabat.Repository.Repository;
+using Talabat.Dtos;
 
 namespace Talabat.Controllers
 {
     public class BasketController : BaseController
     {
         private readonly IBasketRepository _basketRepository;
+
         public BasketController(IBasketRepository basketRepository)
         {
-
             _basketRepository = basketRepository;
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CustomarBasket>> GetCutomarBasket(string id)
+        public async Task<ActionResult<CustomerBasket>> GetCustomerBasket(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(new { Message = "Basket ID is required" });
 
             var basket = await _basketRepository.GetCustomerAsync(id);
 
-            return basket is null ? NotFound() : Ok(basket);
-
+            return basket is null ? NotFound(new { Message = "Basket not found" }) : Ok(basket);
         }
 
         [HttpPost]
-        public async Task<ActionResult<CustomarBasket>> UpdateCustomarBasket(CustomarBasket basket)
+        public async Task<ActionResult<CustomerBasket>> UpdateCustomerBasket([FromBody] CustomerBasketDto basketDto)
         {
-            var basket_CreateOrUpdate = await _basketRepository.UpdateCustomerBasketAsync(basket);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            // Map DTO to Entity
+            var basket = new CustomerBasket
+            {
+                Id = basketDto.Id,
+                Items = basketDto.Items.Select(i => new BasketIteam
+                {
+                    Id = i.Id,
+                    ProductName = i.ProductName,
+                    Price = i.Price,
+                    Quantity = i.Quantity,
+                    PictureUrl = i.PictureUrl,
+                    Brand = i.Brand,
+                    Type = i.Type
+                }).ToList()
+            };
 
-            return basket_CreateOrUpdate is null ? NotFound() : Ok(basket_CreateOrUpdate);
+            var updatedBasket = await _basketRepository.UpdateCustomerBasketAsync(basket);
 
+            return updatedBasket is null 
+                ? BadRequest(new { Message = "Failed to update basket" }) 
+                : Ok(updatedBasket);
         }
-        [HttpDelete]
 
-        public async Task<ActionResult<bool>> DeletCustomarBasket(CustomarBasket basket)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<bool>> DeleteCustomerBasket(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(new { Message = "Basket ID is required" });
 
-            return await _basketRepository.DeleteCustomerBasketAsync(basket.Id);
+            var result = await _basketRepository.DeleteCustomerBasketAsync(id);
 
+            return result ? Ok(new { Success = true }) : NotFound(new { Message = "Basket not found" });
         }
     }
 }

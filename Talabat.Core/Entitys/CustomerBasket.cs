@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Talabat.Core.Entitys
 {
-    public class CustomarBasket
+    public class CustomerBasket
     {
        public string  Id { get; set; }
-        public List<BasketIteam> items { get; set; } 
+        public List<BasketIteam> Items { get; set; } 
     }
 }
