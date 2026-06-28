@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Talabat.Core.Entitys;
 using Talabat.Core.Entitys;
+using Talabat.Core.Entitys.Order_Aggregate;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.Config;
 
@@ -18,6 +19,7 @@ namespace Talabat.Reposatory.Data.DataSeed
             var brandData = File.ReadAllText("../Talabat.Reposatory/Data/DataSeed/brands.json");
             var typeData = File.ReadAllText("../Talabat.Reposatory/Data/DataSeed/types.json");
             var productData = File.ReadAllText("../Talabat.Reposatory/Data/DataSeed/products.json");
+            var delivery = File.ReadAllText("../Talabat.Reposatory/Data/DataSeed/delivery.json");
 
             if (!context.ProductBrands.Any())
             {
@@ -49,6 +51,17 @@ namespace Talabat.Reposatory.Data.DataSeed
                 await context.SaveChangesAsync();
 
             }
+            if (!context.DeliveryMethods.Any())
+            {
+                var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(delivery);
+                foreach (var item in deliveryMethods)
+                {
+                    context.DeliveryMethods.Add(item);
+                }
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
+
+                

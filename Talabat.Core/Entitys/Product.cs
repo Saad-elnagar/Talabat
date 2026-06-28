@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Talabat.Core.Entitys
 {
-    public class Product : Base
+    public class Product : BaseEntity
     {
         public string? search;
 

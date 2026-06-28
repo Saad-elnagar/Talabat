@@ -8,7 +8,7 @@ using Talabat.Reposatory.Specification;
 
 namespace Talabat.Core.Reposatory
 {
-    public interface IGenericRepository<T> where T : Base
+    public interface IGenericRepository<T> where T : BaseEntity
     {
 
         Task<T> GetByIdAsync(int id);

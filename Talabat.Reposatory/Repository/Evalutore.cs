@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Talabat.Core.Entitys;
+using Talabat.Core.Specification;
 using Talabat.Reposatory.Specification;
 
 namespace Talabat.Reposatory.Repository
 {
-    public static class Evalutore<TEntity> where TEntity : Base
+    public static class Evalutore<TEntity> where TEntity : BaseEntity
     {
         public static IQueryable<TEntity> GetQuery(IQueryable<TEntity> inputQuery, ISpecification<TEntity> spec)
         {

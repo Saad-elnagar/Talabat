@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Talabat.Core.Entitys;
+using Talabat.Core.Specification;
 
 namespace Talabat.Reposatory.Specification
 {
-    public class Specification<T> : ISpecification<T> where T : Base
+    public class Specification<T> : ISpecification<T> where T : BaseEntity
     {
         public Expression<Func<T, bool>> Criteria { get; set; }
         public List<Expression<Func<T, object>>> Includes { get; set; } = new List<Expression<Func<T, object>>>();

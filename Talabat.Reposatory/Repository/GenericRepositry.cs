@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
+using Talabat.Reposatory.Data;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Specification;
 
 namespace Talabat.Reposatory.Repository
 {
-    public class GenericRepositry<T> : IGenericRepository<T> where T : Base
+    public class GenericRepositry<T> : IGenericRepository<T> where T : BaseEntity
     {
 
         private readonly StoreContext _context;
