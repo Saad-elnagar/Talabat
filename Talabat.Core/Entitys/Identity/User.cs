@@ -12,7 +12,7 @@ namespace Talabat.Core.Entitys.Identity
     {
         public string DisplayName { get; set; }
         public Address address { get; set; }
-        public string RefreshToken { get; internal set; }
-        public DateTime RefreshTokenExpiryTime { get; internal set; }
+        public string RefreshToken { get;  set; }
+        public DateTime RefreshTokenExpiryTime { get;  set; }
     }
 }

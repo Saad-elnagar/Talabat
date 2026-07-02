@@ -44,5 +44,10 @@ namespace Talabat.Reposatory.Specification
             Skip = skip;
             Take = take;
         }
+
+        public Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

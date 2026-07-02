@@ -12,7 +12,7 @@ namespace Talabat.Core.Service
     {
 
         public Task<TokenDto> GenerateTokenAsync(User user);
-        Task<TokenDto> RefreshTokenAsync(string token, string refreshToken);
+        public Task<TokenDto> RefreshTokenAsync(string token, string refreshToken);
 
 
 

@@ -20,7 +20,7 @@ namespace Talabat.Controllers
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest(new { Message = "Basket ID is required" });
 
-            var basket = await _basketRepository.GetCustomerAsync(id);
+            var basket = await _basketRepository.GetBasketAsync(id);
 
             return basket is null ? NotFound(new { Message = "Basket not found" }) : Ok(basket);
         }

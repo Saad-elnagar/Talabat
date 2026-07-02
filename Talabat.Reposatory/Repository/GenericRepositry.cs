@@ -95,6 +95,36 @@ namespace Talabat.Reposatory.Repository
         }
 
 
+
+        public async Task AddAsync(T entity)
+        
+          => await _context.Set<T>().AddAsync(entity);
+       
+
+        public void UpdateAsync(T entity)
+       
+       => _context.Set<T>().Update(entity);
+
+        
+
+        public void DeleteAsync(T entity)
+        
+        =>    _context.Set<T>().Remove(entity);
+
+        public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+        {
+            try
+            {
+                return await ApplySpecification(spec).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception as needed (e.g., log it)
+                throw new Exception("An error occurred while retrieving data.", ex);
+            }
+
+
+        }
         public IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
             return Evalutore<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);

@@ -26,7 +26,7 @@ namespace Talabat.Repository.Repository
             return await _database.KeyDeleteAsync(basketId);
         }
 
-        public async Task<CustomerBasket?> GetCustomerAsync(string basketId)
+        public async Task<CustomerBasket?> GetBasketAsync(string basketId)
         {
             var basket = await _database.StringGetAsync(basketId);
 
@@ -53,7 +53,7 @@ namespace Talabat.Repository.Repository
                 return null;
 
           
-            return await GetCustomerAsync(basket.Id);
+            return await GetBasketAsync(basket.Id);
         }
     }
 }

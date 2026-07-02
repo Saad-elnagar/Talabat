@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Talabat.Core.Entitys;
+using Talabat.Core.Entitys.Order_Aggregate;
 using Talabat.Reposatory.Specification;
 
 namespace Talabat.Core.Reposatory
@@ -18,5 +19,11 @@ namespace Talabat.Core.Reposatory
         Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec);
         Task<int> GetCountAsync(ISpecification<T> spec);
 
+        Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
+        Task AddAsync(T entity);
+        void UpdateAsync(T entity);
+
+        void DeleteAsync(T entity);
+        
     }
 }
