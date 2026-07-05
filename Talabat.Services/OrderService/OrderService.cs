@@ -23,12 +23,13 @@ namespace Talabat.Services.OrderService
         }
        public async  Task <Order> CreateOrderAsync(string buyerEmail, int deliveryMethodId, string basketId, Address shippingAddress)
         {
+
             var basket = await _basketRepo.GetBasketAsync(basketId);
 
             if (basket?.Items?.Any() != true)
                 throw new InvalidOperationException("Basket is empty.");
 
-            // ✅ Simple & fast for 99% of cases
+          
             var productIds = basket.Items.Select(i => i.Id).ToList();
             var spec = new ProductsByIdsSpec(productIds);
 
@@ -46,7 +47,8 @@ namespace Talabat.Services.OrderService
                     {
                         ProductId = product.Id,
                         ProductName = product.Name,
-                        Price = product.Price
+                        Price = product.Price,
+                        PictureUrl=product.PictureUrl,
                     };
                     return new OrderItem(productItem, product.Price, item.Quantity);
                 })
@@ -81,23 +83,30 @@ namespace Talabat.Services.OrderService
 
 
 
-        public Task<Order> GetOrderAsync(string buyerEmail, int orderId)
-        {
-
-            throw new NotImplementedException();
-
-
-
-        }
+        
 
         public Task<Order> GetOrderByIdSpecificAsync(string buyerEmail, int orderId)
         {
-            throw new NotImplementedException();
+            var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail, orderId);
+            return _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
         }
 
         public Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string buyerEmail)
         {
-            throw new NotImplementedException();
+            var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail);
+
+            var orders = _unitOfWork.Repository<Order>().GetAllWithSpecAsync(spec);
+
+            return orders;
+
+
+        }
+        public async Task<IReadOnlyList<DeliveryMethod>> GeAllDeliveryMethodsAsync()
+        {
+            var deliveryMethods = await _unitOfWork.Repository<DeliveryMethod>().GetAllAsync();
+
+            return deliveryMethods;
+
         }
     }
 }

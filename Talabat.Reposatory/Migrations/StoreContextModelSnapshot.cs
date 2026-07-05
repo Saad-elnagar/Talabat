@@ -99,10 +99,6 @@ namespace Talabat.Reposatory.Migrations
                     b.Property<int?>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PictureUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -248,6 +244,9 @@ namespace Talabat.Reposatory.Migrations
                         {
                             b1.Property<int>("OrderItemId")
                                 .HasColumnType("int");
+
+                            b1.Property<string>("PictureUrl")
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<decimal>("Price")
                                 .HasPrecision(18, 2)

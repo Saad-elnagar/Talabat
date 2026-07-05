@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Talabat.Core.Entitys.Order_Aggregate
 {
-    public class DeliveryMethod : BaseEntity
+    public class    DeliveryMethod : BaseEntity
     {
         public DeliveryMethod() { }
         public DeliveryMethod(string shortName, string description, decimal cost, string deliveryTime)

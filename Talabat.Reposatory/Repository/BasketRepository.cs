@@ -32,7 +32,7 @@ namespace Talabat.Repository.Repository
 
             if (basket.IsNullOrEmpty)
                 return null;
-
+            
             
             return JsonSerializer.Deserialize<CustomerBasket>(basket!);
         }

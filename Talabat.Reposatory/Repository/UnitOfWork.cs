@@ -1,52 +1,46 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
 using Talabat.Reposatory.Data;
+using Talabat.Reposatory.Repository;
 
-namespace Talabat.Reposatory.Repository
+public class UnitOfWork : IUnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    private readonly StoreContext _context;
+    private Hashtable _repositories;  // <-- object مش GenericRepository<BaseEntity>
+
+    public UnitOfWork(StoreContext context)
     {
-        private readonly StoreContext _context;
+        _context = context;
+        _repositories = new Hashtable();
+    }
 
-        // هنخزن الـ Repositories اللي اتعملت عشان ما نعملش واحد جديد كل مرة
-        private Dictionary<string, GenericRepositry<BaseEntity>> _repositories;
+    public IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity
+    {
+        var type = typeof(TEntity).Name;
 
-        public UnitOfWork(StoreContext context)
+        if (!_repositories.ContainsKey(type))
         {
-            _context = context;
-            _repositories = new Dictionary<string, GenericRepositry<BaseEntity>>();
+            // ✅ اعمل instance من GenericRepository<TEntity> مش <BaseEntity>
+            var repositoryType = typeof(GenericRepositry<>);
+            var repositoryInstance = Activator.CreateInstance(
+                repositoryType.MakeGenericType(typeof(TEntity)),
+                _context
+            );
+
+            _repositories.Add(type, repositoryInstance);
         }
 
-        public IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseEntity
-        {
-            
-            var type = typeof(TEntity).Name;
+        return (IGenericRepository<TEntity>)_repositories[type];
+    }
 
-            // لو الـ Repository ده اتعمل قبل كده، رجّعه من الـ Dictionary
-            if (!_repositories.ContainsKey(type))
-            {
-                var repository = new GenericRepositry<BaseEntity>(_context);
-                _repositories.Add(type, repository);
-            }
+    public async Task<int> CompleteAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
 
-            return (IGenericRepository<TEntity>)_repositories[type];
-        }
-
-        public async Task<int> CompleteAsync()
-        {
-           
-            return await _context.SaveChangesAsync();
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await _context.DisposeAsync();
-        }
+    public async ValueTask DisposeAsync()
+    {
+        await _context.DisposeAsync();
     }
 }

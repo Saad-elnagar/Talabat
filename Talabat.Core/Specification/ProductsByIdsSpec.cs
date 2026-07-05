@@ -11,7 +11,7 @@ namespace Talabat.Core.Specification
 {
     public class ProductsByIdsSpec : Specification<Product>
     {
-        public ProductsByIdsSpec(List<int> productIds)
+        public ProductsByIdsSpec(List<int> productIds)  
         
            : base(p => productIds.Contains(p.Id))
         {

@@ -12,6 +12,7 @@ using Talabat.Reposatory.Data;
 using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Identity;
+using Talabat.Services.OrderService;
 
 namespace Talabat
 {
@@ -47,8 +48,8 @@ namespace Talabat
             });
 
             builder.Services.AplicationServices();  // ⚠️ تأكد إن الاسم صح (Application مش Aplication)
-
-            builder.Services.AddScoped<ITokenService, TokenService>();  // ← جديد
+    
+            
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -122,11 +123,11 @@ namespace Talabat
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();           // ← جديد
-            app.UseAuthentication();    // ← بعد Routing
-            app.UseAuthorization();     // ← بعد Authentication
+            app.UseRouting();           
+            app.UseAuthentication();    
+            app.UseAuthorization();     
 
-            app.MapControllers();       // ← في الآخر
+            app.MapControllers();       
             #endregion
 
             await app.RunAsync();

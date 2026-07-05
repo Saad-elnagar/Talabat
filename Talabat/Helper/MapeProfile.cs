@@ -15,6 +15,10 @@ namespace Talabat.Helper
                 .ForMember(dest => dest.PictureUrl, opt => opt.MapFrom<ProductPictureURLResolver>());
 
             CreateMap<Address, AddressDto>().ReverseMap();
+
+
+
+            CreateMap<AddressDto, Talabat.Core.Entitys.Order_Aggregate.Address>();
                 
                 
 
