@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using StackExchange.Redis;
 using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Service;  // ← عشان ITokenService
@@ -53,7 +54,7 @@ namespace Talabat
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddOpenApi();
 
             // ← حطيت JwtBearerDefaults.AuthenticationScheme
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,9 +117,11 @@ namespace Talabat
             #region Middleware Pipeline
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+
+                app.MapOpenApi();
+
             }
+            app.MapScalarApiReference();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
