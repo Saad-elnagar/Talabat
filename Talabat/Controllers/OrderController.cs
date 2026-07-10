@@ -59,7 +59,7 @@ namespace Talabat.Controllers
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
 
-            var order = await _orderService.GetOrderByIdSpecificAsync(email, id);
+            var order = await _orderService.GetOrderByIdSpecificAsync(email!, id);
 
             if (order == null)
                 return NotFound(new APIRespose(404, "Order not found."));

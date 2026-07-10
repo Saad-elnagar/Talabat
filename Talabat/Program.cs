@@ -45,10 +45,10 @@ namespace Talabat
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
                 var connection = builder.Configuration.GetConnectionString("Redis");
-                return ConnectionMultiplexer.Connect(connection);
+               return ConnectionMultiplexer.Connect(connection);
             });
 
-            builder.Services.AplicationServices();  // ⚠️ تأكد إن الاسم صح (Application مش Aplication)
+            builder.Services.AplicationServices(); 
     
             
 
@@ -56,7 +56,7 @@ namespace Talabat
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddOpenApi();
 
-            // ← حطيت JwtBearerDefaults.AuthenticationScheme
+            //  JwtBearerDefaults.AuthenticationScheme
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {

@@ -10,6 +10,7 @@ using Talabat.Helper;
 using Talabat.Reposatory.Identity;
 using Talabat.Reposatory.Repository;
 using Talabat.Repository.Repository;
+using Talabat.Services.CachService;
 
 namespace Talabat.Extension
 {
@@ -26,6 +27,7 @@ namespace Talabat.Extension
             services.AddScoped<ITokenService, TokenService>();  // ✅ مش typeof لو interface
 
             services.AddScoped<IOrderService, Talabat.Services.OrderService.OrderService>();
+            services.AddSingleton<ICachService, CachService>();
             // ← جديد
             services.AddScoped<IOrderMapper, OrderMapper>();                                                                                 // Program.cs (before builder.Build())
             services.AddScoped<IUnitOfWork, UnitOfWork>();

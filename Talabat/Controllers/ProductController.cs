@@ -19,10 +19,12 @@ public class ProductController : BaseController
         _mapper = mapper;
     }
 
+
+    [CachAttribute(600)]
     [HttpGet]
     public async Task<ActionResult<Pagination<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
     {
-        // استخدم UnitOfWork بدل _productRepo
+       
         var products = await _unitOfWork.Repository<Product>()
             .GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification(specParams));
 
@@ -38,7 +40,7 @@ public class ProductController : BaseController
             data
         ));
     }
-
+   [CachAttribute(600)]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductResultToDto>> GetProductSpec(int id)
     {
@@ -50,13 +52,14 @@ public class ProductController : BaseController
 
         return Ok(_mapper.Map<ProductResultToDto>(product));
     }
-
+    [CachAttribute(600)]
     [HttpGet("brands")]
     public async Task<ActionResult<IEnumerable<ProductBrand>>> GetProductBrands()
     {
         var brands = await _unitOfWork.Repository<ProductBrand>().GetAllAsync();
         return Ok(brands);
     }
+    [CachAttribute(600)]
 
     [HttpGet("types")]
     public async Task<ActionResult<IEnumerable<ProductType>>> GetProductType()
