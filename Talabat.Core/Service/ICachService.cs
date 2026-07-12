@@ -8,10 +8,8 @@ namespace Talabat.Core.Service
 {
     public interface ICachService
     {
-
-        public Task CachRepoAsync (string key, object value, TimeSpan expiration );
-
-        public Task <string> GetCachAsync(string key);
-
+        Task CacheResponseAsync (string key, object response, TimeSpan expiration);
+        Task<string> GetCachedResponseAsync(string key);
+       // Task RemoveCacheAsync(string key); 
     }
 }

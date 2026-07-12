@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.3.0" />
     <PackageReference Include="Scalar.AspNetCore.Microsoft" Version="2.16.10" />
     <PackageReference Include="StackExchange.Redis" Version="3.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />

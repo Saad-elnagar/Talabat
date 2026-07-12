@@ -40,7 +40,7 @@ public class ProductController : BaseController
             data
         ));
     }
-   [CachAttribute(600)]
+   [CachAttribute(300)]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductResultToDto>> GetProductSpec(int id)
     {
@@ -67,4 +67,5 @@ public class ProductController : BaseController
         var types = await _unitOfWork.Repository<ProductType>().GetAllAsync();
         return Ok(types);
     }
+
 }

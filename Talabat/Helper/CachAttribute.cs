@@ -1,61 +1,63 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Text;
+using Talabat.Core.Service;
 
-namespace Talabat.Helper
+[AttributeUsage(AttributeTargets.Method)]
+public class CachAttribute : Attribute, IAsyncActionFilter
 {
-    public class CachAttribute : Attribute, IAsyncActionFilter
+    private readonly int _timeToLiveInSeconds;
+
+    public CachAttribute(int timeToLiveInSeconds)
     {
-        public int _time_ToLive { get; }
-        public CachAttribute(int time_ToLive)
+        _timeToLiveInSeconds = timeToLiveInSeconds;
+    }
+
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        var cacheService = context.HttpContext.RequestServices
+            .GetRequiredService<ICachService>();
+
+        var cacheKey = GenerateCacheKeyFromRequest(context.HttpContext.Request);
+        var cachedResponse = await cacheService.GetCachedResponseAsync(cacheKey);
+
+        // ========== CACHE HIT ==========
+        if (!string.IsNullOrEmpty(cachedResponse))
         {
-            _time_ToLive = time_ToLive;
+            // ✅ cachedResponse هو JSON string جاهز، مفيش داعي نعمل Serialize تاني
+            context.Result = new ContentResult
+            {
+                Content = cachedResponse,
+                ContentType = "application/json",
+                StatusCode = 200
+            };
+            return;
         }
 
-        
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        // ========== CACHE MISS ==========
+        var executedContext = await next();
+
+        if (executedContext.Result is OkObjectResult okObjectResult
+            && okObjectResult.Value != null)
         {
-            // Get the cache service from the request services use Dependency Injection
-            var cachService = context.HttpContext.RequestServices.GetRequiredService<Talabat.Core.Service.ICachService>();
-            // Generate a cache key based on the request
-            var cachKey = GenerateCachKeyFromRequest(context.HttpContext.Request);
-            // Check if the response is already cached
-            var cachedResponse = await cachService.GetCachAsync(cachKey);
+            // ✅ خزّن الـ Value بس، مش الـ OkObjectResult كله
+            await cacheService.CacheResponseAsync(
+                cacheKey,
+                okObjectResult.Value,
+                TimeSpan.FromSeconds(_timeToLiveInSeconds));
+        }
+    }
 
-            if (!string.IsNullOrEmpty(cachedResponse))
-            {
-                var contentResult = new ContentResult
-                {
-                    Content = cachedResponse,
-                    ContentType = "application/json",
-                    StatusCode = 200
-                };
+    private string GenerateCacheKeyFromRequest(HttpRequest request)
+    {
+        var keyBuilder = new StringBuilder();
+        keyBuilder.Append(request.Path);
 
-
-                context.Result = contentResult;
-
-                return; // Important: do not call next() when Result is set
-            }
-            var ExecutedContext = await next();
-            // Execute the action and get the result
-            if (ExecutedContext.Result is OkObjectResult okObjectResult)
-            {
-                // Cache the response for future requests
-                await cachService.CachRepoAsync(cachKey, okObjectResult.Value!, TimeSpan.FromSeconds(_time_ToLive)); 
-            }
-
+        foreach (var (key, value) in request.Query.OrderBy(x => x.Key))
+        {
+            keyBuilder.Append($"|{key}={value}");
         }
 
-        private string GenerateCachKeyFromRequest(HttpRequest request)
-        {
-            var keyBuilder = new StringBuilder();
-            keyBuilder.Append($"{request.Path}");
-            foreach (var (key, value) in request.Query)
-            {
-                keyBuilder.Append($"|{key}-{value}");
-            }
-            return keyBuilder.ToString();
-
-        }
+        return keyBuilder.ToString();
     }
 }

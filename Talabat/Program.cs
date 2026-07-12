@@ -2,6 +2,7 @@ using Abp.Domain.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;  // ← جديد
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -25,6 +26,8 @@ namespace Talabat
 
             #region ConfigServices
 
+
+
             builder.Services.AddDbContext<StoreContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -42,11 +45,27 @@ namespace Talabat
             })
             .AddEntityFrameworkStores<AppIdentityDbContext>();
 
+            
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
-                var connection = builder.Configuration.GetConnectionString("Redis");
+                // Get the Redis connection string from configuration
+                var connection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379"; ;
                return ConnectionMultiplexer.Connect(connection);
             });
+
+            builder.Services.AddHybridCache(options =>
+            {
+                // إعدادات افتراضية لوقت الكاش
+                options.DefaultEntryOptions = new HybridCacheEntryOptions
+                {
+                    Expiration = TimeSpan.FromMinutes(10), // الوقت الكلي لانتهاء الكاش في Redis
+                    LocalCacheExpiration = TimeSpan.FromMinutes(2) // وقت الاحتفاظ بالنسخة جوة الـ RAM بتاعة السيرفر (L1)
+                };
+            });
+
+
+            builder.Services.AddMemoryCache();
+
 
             builder.Services.AplicationServices(); 
     
@@ -69,7 +88,7 @@ namespace Talabat
                         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                         ValidAudience = builder.Configuration["JwtSettings:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+                            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!))
                     };
                 });
 

@@ -27,8 +27,9 @@ namespace Talabat.Extension
             services.AddScoped<ITokenService, TokenService>();  // ✅ مش typeof لو interface
 
             services.AddScoped<IOrderService, Talabat.Services.OrderService.OrderService>();
-            services.AddSingleton<ICachService, CachService>();
-            // ← جديد
+            
+          
+            services.AddSingleton<ICachService, MultiLayerCacheService>();
             services.AddScoped<IOrderMapper, OrderMapper>();                                                                                 // Program.cs (before builder.Build())
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.Configure<ApiBehaviorOptions>(options =>
