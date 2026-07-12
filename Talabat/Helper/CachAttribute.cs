@@ -24,7 +24,7 @@ public class CachAttribute : Attribute, IAsyncActionFilter
         // ========== CACHE HIT ==========
         if (!string.IsNullOrEmpty(cachedResponse))
         {
-            // ✅ cachedResponse هو JSON string جاهز، مفيش داعي نعمل Serialize تاني
+            
             context.Result = new ContentResult
             {
                 Content = cachedResponse,
@@ -40,7 +40,7 @@ public class CachAttribute : Attribute, IAsyncActionFilter
         if (executedContext.Result is OkObjectResult okObjectResult
             && okObjectResult.Value != null)
         {
-            // ✅ خزّن الـ Value بس، مش الـ OkObjectResult كله
+           
             await cacheService.CacheResponseAsync(
                 cacheKey,
                 okObjectResult.Value,

@@ -14,17 +14,16 @@ using Talabat.Services.CachService;
 
 namespace Talabat.Extension
 {
-    public static class AplicationServiceExtension  // ✅ public static
+    public static class AplicationServiceExtension  
     {
-        public static IServiceCollection AplicationServices(this IServiceCollection services)  // ✅ مش async
+        public static IServiceCollection AplicationServices(this IServiceCollection services)  
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositry<>));
-            // services.AddScoped<IUnitOfWork, UnitOfWork>();
+           
 
-            services.AddAutoMapper(cfg => { }, typeof(MapeProfile)); // ✅ Syntax صح
-
-            services.AddScoped<IBasketRepository, BasketRepository>();  // ✅ مش typeof لو interface
-            services.AddScoped<ITokenService, TokenService>();  // ✅ مش typeof لو interface
+            services.AddAutoMapper(cfg => { }, typeof(MapeProfile)); 
+            services.AddScoped<IBasketRepository, BasketRepository>();  
+            services.AddScoped<ITokenService, TokenService>();  
 
             services.AddScoped<IOrderService, Talabat.Services.OrderService.OrderService>();
             
@@ -32,6 +31,8 @@ namespace Talabat.Extension
             services.AddSingleton<ICachService, MultiLayerCacheService>();
             services.AddScoped<IOrderMapper, OrderMapper>();                                                                                 // Program.cs (before builder.Build())
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+           
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
