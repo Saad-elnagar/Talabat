@@ -15,7 +15,7 @@ namespace Talabat.Services.CachService
     {
         private readonly IMemoryCache _memoryCache;
         private readonly StackExchange.Redis.IDatabase _redisDb;
-
+        private static readonly SemaphoreSlim _cacheLock = new SemaphoreSlim(1, 1);
         public MultiLayerCacheService(IMemoryCache memoryCache, IConnectionMultiplexer redisDb)
         {
             _memoryCache = memoryCache;
@@ -43,12 +43,14 @@ namespace Talabat.Services.CachService
 
         public async Task<string> GetCachedResponseAsync(string key)
         {
+
             // L1: Memory
             if (_memoryCache.TryGetValue(key, out string? cached) && !string.IsNullOrEmpty(cached))
             {
                 Console.WriteLine("Catch fROM Memory");
                 return cached;
             }
+            await _cacheLock.WaitAsync();
 
             // L2: Redis
             var redisValue = await _redisDb.StringGetAsync(key);

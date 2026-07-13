@@ -11,6 +11,7 @@ using Talabat.Reposatory.Identity;
 using Talabat.Reposatory.Repository;
 using Talabat.Repository.Repository;
 using Talabat.Services.CachService;
+using Talabat.Services.PaymentService;
 
 namespace Talabat.Extension
 {
@@ -31,8 +32,9 @@ namespace Talabat.Extension
             services.AddSingleton<ICachService, MultiLayerCacheService>();
             services.AddScoped<IOrderMapper, OrderMapper>();                                                                                 // Program.cs (before builder.Build())
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IPaymentIntent, PaymentService>();
 
-           
+
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>

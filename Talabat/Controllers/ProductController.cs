@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Talabat.Controllers;
 using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
@@ -21,6 +22,7 @@ public class ProductController : BaseController
 
 
     [CachAttribute(600)]
+    [EnableRateLimiting("Search")]
     [HttpGet]
     public async Task<ActionResult<Pagination<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
     {

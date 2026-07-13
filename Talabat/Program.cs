@@ -1,12 +1,14 @@
 using Abp.Domain.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;  // ← جديد
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using StackExchange.Redis;
+using Stripe;
 using Talabat.Core.Entitys.Identity;
 using Talabat.Core.Service;  // ← عشان ITokenService
 using Talabat.Extension;
@@ -55,16 +57,32 @@ namespace Talabat
 
             builder.Services.AddHybridCache(options =>
             {
-                // إعدادات افتراضية لوقت الكاش
+                
                 options.DefaultEntryOptions = new HybridCacheEntryOptions
                 {
-                    Expiration = TimeSpan.FromMinutes(10), // الوقت الكلي لانتهاء الكاش في Redis
-                    LocalCacheExpiration = TimeSpan.FromMinutes(2) // وقت الاحتفاظ بالنسخة جوة الـ RAM بتاعة السيرفر (L1)
+                    Expiration = TimeSpan.FromMinutes(10), // Redis Cache expiration time
+                    LocalCacheExpiration = TimeSpan.FromMinutes(2) // Local cache expiration time
                 };
             });
 
 
             builder.Services.AddMemoryCache();
+
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddTokenBucketLimiter("Search", searchOptions =>
+                {
+                    searchOptions.TokenLimit = 20;
+                    searchOptions.TokensPerPeriod = 10;
+                    searchOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+
+                });
+
+            });
+          
+
+            // 2. تسجيل الـ PaymentIntentService كـ Scoped Service
+            builder.Services.AddScoped<PaymentIntentService>();
 
 
             builder.Services.AplicationServices(); 
@@ -147,7 +165,8 @@ namespace Talabat
 
             app.UseRouting();           
             app.UseAuthentication();    
-            app.UseAuthorization();     
+            app.UseAuthorization();  
+            app.UseRateLimiter();
 
             app.MapControllers();       
             #endregion
