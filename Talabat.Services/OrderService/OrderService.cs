@@ -21,20 +21,25 @@ namespace Talabat.Services.OrderService
         public async Task<Order> CreateOrderAsync(string buyerEmail, int deliveryMethodId,
             string basketId, Address shippingAddress,OrderStatus orderStatus )
         {
-            // 1. يجيب السلة من Redis
+            
+             // Get Basket 
+            
             var basket = await _basketRepository.GetBasketAsync(basketId);
+
+
+
             if (basket == null) return null;
 
-            // 2. يجيب طريقة التوصيل
+            
             var deliveryMethod = await _unitOfWork
                 .Repository<DeliveryMethod>()
                 .GetByIdAsync(deliveryMethodId);
             if (deliveryMethod == null) return null;
 
-            // 3. يحسب المجموع
+            
             var subtotal = basket.Items.Sum(i => i.Price * i.Quantity);
 
-            // 4. يحول BasketItem → OrderItem
+            
             var orderItems = basket.Items.Select(item => new OrderItem(
                 new ProductOrderIteam
                 {
@@ -45,7 +50,7 @@ namespace Talabat.Services.OrderService
                 item.Quantity
             )).ToList();
 
-            // 5. يعمل الطلب
+            
             var order = new Order(
                 buyerEmail: buyerEmail,
                 orderStatus: orderStatus,
@@ -56,7 +61,7 @@ namespace Talabat.Services.OrderService
                 paymentIntentId: basket.PaymentId ?? ""
             );
 
-            // 6. يحفظ
+           
             _unitOfWork.Repository<Order>().Add(order);
             var result = await _unitOfWork.CompleteAsync();
 

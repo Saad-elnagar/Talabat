@@ -178,11 +178,11 @@ namespace Talabat.Controllers
             basket.PaymentId = paymentIntentId;
             await _basketRepository.UpdateCustomerBasketAsync(basket);
 
-            // 3. Extract Shipping Address (Fallback to Stripe Session if not present in Basket)
+            
             // 3. Extract Shipping Address (Fallback to Stripe Session if not present in Basket)
             var shippingAddress = basket.ShippingAddress;
 
-            // في الإصدارات الحديثة من Stripe.net البيانات بتكون جوه CollectedInformation.ShippingDetails
+           
             var stripeShipping = session.CollectedInformation?.ShippingDetails;
 
             if (shippingAddress == null && stripeShipping != null)
