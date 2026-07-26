@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Talabat.Core.Entitys;
-using Talabat.Core.Reposatory;
-using Talabat.Dtos;
-
+﻿
 namespace Talabat.Controllers
 {
     public class BasketController : BaseController
@@ -37,7 +33,7 @@ namespace Talabat.Controllers
                 Id = basketDto.Id,
                 PaymentId = basketDto.PaymentIntentId,
                 ShippingPrice = basketDto.ShippingPrice,
-                ShippingAddress =basketDto.ShippingAddress,
+                ShippingAddress = basketDto.ShippingAddress,
                 DeliveryMethodId = basketDto.DeliveryMethodId,
                 Items = basketDto.Items.Select(i => new BasketIteam
                 {
@@ -55,8 +51,8 @@ namespace Talabat.Controllers
 
             var updatedBasket = await _basketRepository.UpdateCustomerBasketAsync(basket);
 
-            return updatedBasket is null 
-                ? BadRequest(new { Message = "Failed to update basket" }) 
+            return updatedBasket is null
+                ? BadRequest(new { Message = "Failed to update basket" })
                 : Ok(updatedBasket);
         }
 

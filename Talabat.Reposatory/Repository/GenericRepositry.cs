@@ -1,13 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Talabat.Core.Entitys;
 using Talabat.Core.Reposatory;
 using Talabat.Reposatory.Data;
-using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Specification;
 
 namespace Talabat.Reposatory.Repository
@@ -44,7 +38,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                 // Handle the exception as needed (e.g., log it)
+                // Handle the exception as needed (e.g., log it)
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
         }
@@ -89,7 +83,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                
+
                 throw new Exception("An error occurred while counting data.", ex);
             }
         }
@@ -97,19 +91,19 @@ namespace Talabat.Reposatory.Repository
 
 
         public async Task Add(T entity)
-        
+
           => await _context.Set<T>().AddAsync(entity);
-       
+
 
         public void Update(T entity)
-       
+
        => _context.Set<T>().Update(entity);
 
-        
+
 
         public void Delete(T entity)
-        
-        =>    _context.Set<T>().Remove(entity);
+
+        => _context.Set<T>().Remove(entity);
 
         public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
         {

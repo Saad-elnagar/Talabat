@@ -60,7 +60,7 @@ namespace Talabat.Services.PaymentService
 
             basket.SessionId = session.Id;
             basket.PaymentId = session.PaymentIntentId;
-            basket.ClientSecret = session.Url; 
+            basket.ClientSecret = session.Url;
 
             await _basketRepository.UpdateCustomerBasketAsync(basket);
 

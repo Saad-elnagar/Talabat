@@ -1,15 +1,4 @@
-﻿// Talabat.APIs/Controllers/PaymentsController.cs
-using Microsoft.AspNetCore.Mvc;
-using Stripe;
-using Stripe.Checkout;
-using Talabat.APIs.DTOs;
-using Talabat.Core.Entitys;
-using Talabat.Core.Entitys.Order_Aggregate;
-using Talabat.Core.Reposatory;
-using Talabat.Core.Service;
-using Talabat.Core.Specification;
-
-namespace Talabat.Controllers
+﻿namespace Talabat.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -44,7 +33,7 @@ namespace Talabat.Controllers
                 ?? throw new InvalidOperationException("StripeSettings:WebhookSecret is not configured.");
         }
 
-      //  [HttpPost("send-email-link")]
+        //  [HttpPost("send-email-link")]
         //public async Task<IActionResult> SendPaymentLinkByEmail([FromBody] SendPaymentLinkRequest request)
         //{
         //    try
@@ -178,11 +167,11 @@ namespace Talabat.Controllers
             basket.PaymentId = paymentIntentId;
             await _basketRepository.UpdateCustomerBasketAsync(basket);
 
-            
+
             // 3. Extract Shipping Address (Fallback to Stripe Session if not present in Basket)
             var shippingAddress = basket.ShippingAddress;
 
-           
+
             var stripeShipping = session.CollectedInformation?.ShippingDetails;
 
             if (shippingAddress == null && stripeShipping != null)
@@ -224,13 +213,13 @@ namespace Talabat.Controllers
                     ?? throw new InvalidOperationException($"Basket {basketId} has no delivery method set."),
                 basketId: basketId,
         shippingAddress: shippingAddress,
-        orderStatus : OrderStatus.PaymentReceived
+        orderStatus: OrderStatus.PaymentReceived
         );
 
             if (order != null)
             {
                 order.PaymentIntentId = paymentIntentId;
-                await _unitOfWork.CompleteAsync(); 
+                await _unitOfWork.CompleteAsync();
                 await _basketRepository.DeleteCustomerBasketAsync(basketId);
 
                 _logger.LogInformation("Order {OrderId} created with PaymentIntent {PI}", order.Id, paymentIntentId);

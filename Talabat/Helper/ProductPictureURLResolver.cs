@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Talabat.Core.Entitys;
-using Talabat.Dto;
+﻿using Product = Talabat.Core.Entitys.Product;
 
 namespace Talabat.Helper
 {
@@ -18,7 +16,7 @@ namespace Talabat.Helper
             {
                 return $"{_config["ApiBaseURL"]}{source.PictureUrl}";
             }
-           return string.Empty;
+            return string.Empty;
         }
     }
 }

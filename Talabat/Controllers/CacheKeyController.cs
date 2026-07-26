@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-
-namespace Talabat.Controllers
+﻿namespace Talabat.Controllers
 {
     public class CacheKeyController : BaseController
     {
-        public  IMemoryCache _memoryCache;
-       
+        public IMemoryCache _memoryCache;
+
 
         public CacheKeyController(IMemoryCache memoryCache)
         {
@@ -15,15 +12,14 @@ namespace Talabat.Controllers
         [HttpGet("live-keys")]
         public IActionResult GetMemoryCacheKeys()
         {
-          
 
-        // الوصول للحقل المخفي المسؤول عن حالة الكاش
-        var coherentStateField = _memoryCache.GetType()
-                .GetField("_coherentState", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            var coherentStateField = _memoryCache.GetType()
+                    .GetField("_coherentState", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             var coherentState = coherentStateField?.GetValue(_memoryCache);
 
-            // لقط القاموس الداخلي (EntriesCollection) اللي شايل الداتا
+
             var entriesCollectionProp = coherentState?.GetType()
                 .GetProperty("EntriesCollection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
@@ -40,7 +36,7 @@ namespace Talabat.Controllers
                     if (key != null) cacheKeys.Add(key.ToString()!);
                 }
             }
-            // هيرجعلك Array فيها كل المفاتيح المخزنة في الـ RAM حالياً
+
             return Ok(cacheKeys);
         }
     }

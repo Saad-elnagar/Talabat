@@ -1,19 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Claims;
-using Talabat.Core.Entitys;
-using Talabat.Core.Entitys.Identity;
-using Talabat.Core.Service;  // <-- أضف ده
-using Talabat.Dto;
-using Talabat.Erorr;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
+﻿
 namespace Talabat.Controllers
 {
     public class AccountController : BaseController
@@ -59,14 +44,14 @@ namespace Talabat.Controllers
                 return BadRequest(new APIRespose(400, "Email is Already .."));
             }
 
-            
+
             var user = new User
             {
                 DisplayName = registerDto.DisplayName,
                 UserName = registerDto.UserName,
                 Email = registerDto.Email,
                 PhoneNumber = registerDto.PhoneNumber,
-                RefreshToken= Guid.NewGuid().ToString(),
+                RefreshToken = Guid.NewGuid().ToString(),
 
             };
 
@@ -127,7 +112,7 @@ namespace Talabat.Controllers
             var userWithAddress = await _userManager.Users
            .Include(u => u.address)
            .FirstOrDefaultAsync(u => u.Id == user.Id);
-            var address = _mapper.Map<Address, AddressDto>(user.address);
+            var address = _mapper.Map<Core.Entitys.Identity.Address, AddressDto>(user.address);
 
             return Ok(address);
 
@@ -137,7 +122,7 @@ namespace Talabat.Controllers
         }
 
 
-        
+
 
         //public async Task<ActionResult<AddressDto>> UpdateUserAddress(AddressDto addressDto)
         //{

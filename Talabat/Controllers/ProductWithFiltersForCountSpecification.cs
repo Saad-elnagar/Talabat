@@ -1,6 +1,4 @@
-﻿using Talabat.Core.Entitys;
-using Talabat.Core.Specification;
-using Talabat.Reposatory.Specification;
+﻿using Product = Talabat.Core.Entitys.Product;
 
 namespace Talabat.Controllers
 {
@@ -9,7 +7,7 @@ namespace Talabat.Controllers
 
         public ProductWithFiltersForCountSpecification(ProductSpecParams specParams) : base(p =>
               (string.IsNullOrEmpty(specParams.search) || p.Name.ToLower().Contains(specParams.search)) &&
-            (!specParams.Needprice.HasValue || p.Price == specParams.Needprice.Value)&&
+            (!specParams.Needprice.HasValue || p.Price == specParams.Needprice.Value) &&
             (!specParams.BrandId.HasValue || p.ProductBrandId == specParams.BrandId.Value) &&
             (!specParams.TypeId.HasValue || p.ProductTypeId == specParams.TypeId.Value))
         {

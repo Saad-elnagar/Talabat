@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Talabat.Core.Entitys;
+﻿using System.Text.Json;
 using Talabat.Core.Entitys;
 using Talabat.Core.Entitys.Order_Aggregate;
-using Talabat.Reposatory.Data.Config;
-using Talabat.Reposatory.Data.Config;
 
 namespace Talabat.Reposatory.Data.DataSeed
 {
@@ -64,4 +56,3 @@ namespace Talabat.Reposatory.Data.DataSeed
     }
 }
 
-                

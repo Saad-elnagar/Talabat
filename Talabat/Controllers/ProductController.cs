@@ -1,14 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using Talabat.Controllers;
-using Talabat.Core.Entitys;
-using Talabat.Core.Reposatory;
-using Talabat.Core.Specification;
-using Talabat.Dto;
-using Talabat.Erorr;
-using Talabat.Helper;
-
+﻿
+using Product = Talabat.Core.Entitys.Product;
 public class ProductController : BaseController
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -26,7 +17,7 @@ public class ProductController : BaseController
     [HttpGet]
     public async Task<ActionResult<Pagination<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
     {
-       
+
         var products = await _unitOfWork.Repository<Product>()
             .GetAllWithSpecAsync(new ProductWithTypesAndBrandsSpecification(specParams));
 
@@ -42,7 +33,7 @@ public class ProductController : BaseController
             data
         ));
     }
-   [CachAttribute(300)]
+    [CachAttribute(300)]
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductResultToDto>> GetProductSpec(int id)
     {

@@ -7,7 +7,7 @@ using Talabat.Reposatory.Repository;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly StoreContext _context;
-    private Hashtable _repositories; 
+    private Hashtable _repositories;
 
     public UnitOfWork(StoreContext context)
     {

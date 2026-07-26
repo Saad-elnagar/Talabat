@@ -1,12 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Talabat.Core.Entitys.Order_Aggregate;
-using Talabat.Core.Service;
-using Talabat.Dto;
-using Talabat.Erorr;
-using Talabat.Reposatory.Data.Config;
+﻿
 
 namespace Talabat.Controllers
 {
@@ -44,7 +36,7 @@ namespace Talabat.Controllers
         }
 
 
-        
+
         [HttpGet]
         public async Task<ActionResult<UserOrdersSummaryDto>> GetOrdersForUser()
         {
@@ -74,7 +66,7 @@ namespace Talabat.Controllers
         }
 
         [HttpGet("deliverymethods")]
-        public async Task<ActionResult<IReadOnlyList< DeliveryMethodDto>>>GetAllDelivaryMehod()
+        public async Task<ActionResult<IReadOnlyList<DeliveryMethodDto>>> GetAllDelivaryMehod()
         {
             var deliveryMethods = await _orderService.GeAllDeliveryMethodsAsync();
             if (deliveryMethods == null || !deliveryMethods.Any())
@@ -88,8 +80,8 @@ namespace Talabat.Controllers
                 Cost = dm.Cost,
                 DeliveryTime = dm.DeliveryTime
             }).ToList();
-           
-             return Ok(result);
+
+            return Ok(result);
 
         }
     }

@@ -1,4 +1,4 @@
-﻿using Talabat.Core.Entitys.Order_Aggregate;
+﻿using Address = Talabat.Core.Entitys.Order_Aggregate.Address;
 
 namespace Talabat.Dto
 {
@@ -7,15 +7,15 @@ namespace Talabat.Dto
 
 
 
-       public string buyerEmail{ get; set; }
+        public string buyerEmail { get; set; }
 
-       public int deliveryMethodId{ get; set; }
+        public int deliveryMethodId { get; set; }
 
-       public string basketId{ get; set; }
+        public string basketId { get; set; }
 
-       public Address shippingAddress{ get; set; }
-         
-        public OrderStatus orderStatus{ get; set; }
+        public Address shippingAddress { get; set; }
+
+        public OrderStatus orderStatus { get; set; }
 
 
     }

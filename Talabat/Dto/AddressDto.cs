@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using Talabat.Core.Entitys.Identity;
-
-namespace Talabat.Dto
+﻿namespace Talabat.Dto
 {
     public class AddressDto
     {
@@ -13,6 +10,6 @@ namespace Talabat.Dto
         public string City { get; set; }
         public string State { get; set; }
 
-      
+
     }
 }

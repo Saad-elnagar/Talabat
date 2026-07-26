@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using Talabat.Core.Entitys;
-using Talabat.Core.Entitys.Identity;
-using Talabat.Dto;
-using Talabat.Dtos;
+﻿using Address = Talabat.Core.Entitys.Order_Aggregate.Address;
+using Product = Talabat.Core.Entitys.Product;
 
 namespace Talabat.Helper
 {
@@ -21,8 +18,8 @@ namespace Talabat.Helper
 
 
             CreateMap<AddressDto, Talabat.Core.Entitys.Order_Aggregate.Address>();
-                
-                
+
+
 
         }
     }

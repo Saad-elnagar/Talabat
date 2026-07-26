@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;  // ← غيره لو حطيت TokenDto في Core
 using Talabat.Core.Entitys.Identity;
 using Talabat.Dto;
 
@@ -60,11 +56,11 @@ namespace Talabat.Core.Service
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
 
-            return new TokenDto  
+            return new TokenDto
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                 RefreshToken = refreshToken,
-                ExpiresAt = jwtSecurityToken.ValidTo  
+                ExpiresAt = jwtSecurityToken.ValidTo
             };
         }
 

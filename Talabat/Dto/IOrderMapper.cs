@@ -1,6 +1,4 @@
-﻿using Talabat.Core.Entitys.Order_Aggregate;
-
-namespace Talabat.Dto
+﻿namespace Talabat.Dto
 {
     public interface IOrderMapper
     {

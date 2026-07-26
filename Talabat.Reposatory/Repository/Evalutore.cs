@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using Talabat.Core.Entitys;
-using Talabat.Core.Specification;
 using Talabat.Reposatory.Specification;
 
 namespace Talabat.Reposatory.Repository

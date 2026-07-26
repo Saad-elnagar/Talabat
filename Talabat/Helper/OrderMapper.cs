@@ -1,6 +1,4 @@
-﻿using Talabat.Core.Entitys.Order_Aggregate;
-using Talabat.Dto;
-
+﻿
 namespace Talabat.Helper
 {
     public class OrderMapper : IOrderMapper
@@ -12,7 +10,7 @@ namespace Talabat.Helper
             return new OrderItemDto
             {
                 ProductName = item.Product.ProductName,
-             //   ProductId = item.Product.ProductId,
+                //   ProductId = item.Product.ProductId,
                 Price = item.Price,
                 PictureUrl = item.Product.PictureUrl,
                 Quantity = item.Quantity

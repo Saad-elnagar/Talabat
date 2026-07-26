@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using System.Text;
-using Talabat.Core.Service;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class CachAttribute : Attribute, IAsyncActionFilter
@@ -24,7 +22,7 @@ public class CachAttribute : Attribute, IAsyncActionFilter
         // ========== CACHE HIT ==========
         if (!string.IsNullOrEmpty(cachedResponse))
         {
-            
+
             context.Result = new ContentResult
             {
                 Content = cachedResponse,
@@ -40,7 +38,7 @@ public class CachAttribute : Attribute, IAsyncActionFilter
         if (executedContext.Result is OkObjectResult okObjectResult
             && okObjectResult.Value != null)
         {
-           
+
             await cacheService.CacheResponseAsync(
                 cacheKey,
                 okObjectResult.Value,

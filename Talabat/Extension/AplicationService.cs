@@ -1,21 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Stripe;
-using Talabat.Core.Entitys.Identity;
-using Talabat.Core.Reposatory;
-using Talabat.Core.Service;
-using Talabat.Dto;
-using Talabat.Erorr;
-using Talabat.Helper;
-using Talabat.Reposatory.Identity;
-using Talabat.Reposatory.Repository;
-using Talabat.Repository.Repository;
-using Talabat.Services.CachService;
-using Talabat.Services.EmailService;
-using Talabat.Services.PaymentService;
-
-namespace Talabat.Extension
+﻿namespace Talabat.Extension
 {
     public static class AplicationServiceExtension
     {
@@ -29,7 +12,7 @@ namespace Talabat.Extension
             services.AddScoped<ITokenService, Core.Service.TokenService>();
             services.AddScoped<IOrderService, Talabat.Services.OrderService.OrderService>();
             services.AddSingleton<ICachService, MultiLayerCacheService>();
-            services.AddScoped<IOrderMapper, OrderMapper>();                                                                                 // Program.cs (before builder.Build())
+            services.AddScoped<IOrderMapper, OrderMapper>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IStripeCheckoutService, StripeCheckoutService>();
             services.AddScoped<IEmailService, SendGridEmailService>();

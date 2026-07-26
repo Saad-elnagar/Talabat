@@ -1,6 +1,4 @@
-﻿using Talabat.Core.Entitys;
-
-namespace Talabat.Dto
+﻿namespace Talabat.Dto
 {
     public class ProductResultToDto
     {
@@ -13,8 +11,8 @@ namespace Talabat.Dto
         public string PictureUrl { get; set; }
         public int ProductTypeId { get; set; }
         public int ProductBrandId { get; set; }
-        public string ProductType { get; set; } 
-        public string ProductBrand { get; set; } 
+        public string ProductType { get; set; }
+        public string ProductBrand { get; set; }
 
     }
 }

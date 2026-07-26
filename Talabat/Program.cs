@@ -1,22 +1,11 @@
-using Abp.Domain.Policies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;  // ← جديد
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using StackExchange.Redis;
-using Stripe;
-using Talabat.Core.Entitys.Identity;
-using Talabat.Core.Service;  // ← عشان ITokenService
 using Talabat.Extension;
 using Talabat.Reposatory.Data;
-using Talabat.Reposatory.Data.Config;
 using Talabat.Reposatory.Data.DataSeed;
 using Talabat.Reposatory.Identity;
-using Talabat.Services.OrderService;
 
 namespace Talabat
 {
@@ -47,17 +36,17 @@ namespace Talabat
             })
             .AddEntityFrameworkStores<AppIdentityDbContext>();
 
-            
+
             builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
             {
                 // Get the Redis connection string from configuration
                 var connection = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379"; ;
-               return ConnectionMultiplexer.Connect(connection);
+                return ConnectionMultiplexer.Connect(connection);
             });
 
             builder.Services.AddHybridCache(options =>
             {
-                
+
                 options.DefaultEntryOptions = new HybridCacheEntryOptions
                 {
                     Expiration = TimeSpan.FromMinutes(10), // Redis Cache expiration time
@@ -79,15 +68,15 @@ namespace Talabat
                 });
 
             });
-          
+
 
             // 2. تسجيل الـ PaymentIntentService كـ Scoped Service
-         //   builder.Services.AddScoped<PaymentIntentService>();
+            //   builder.Services.AddScoped<PaymentIntentService>();
 
 
-            builder.Services.AplicationServices(); 
-    
-            
+            builder.Services.AplicationServices();
+
+
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -163,12 +152,12 @@ namespace Talabat
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();           
-            app.UseAuthentication();    
-            app.UseAuthorization();  
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseRateLimiter();
 
-            app.MapControllers();       
+            app.MapControllers();
             #endregion
 
             await app.RunAsync();

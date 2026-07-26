@@ -9,13 +9,14 @@
         public string search { get; set; }
 
 
-        public Pagination(int pageIndex, int pageSize, int count, IReadOnlyList<T> data) {
+        public Pagination(int pageIndex, int pageSize, int count, IReadOnlyList<T> data)
+        {
             PageIndex = pageIndex;
             PageSize = pageSize;
             Count = count;
             Data = data;
         }
 
-      
+
     }
 }
