@@ -19,7 +19,6 @@ namespace Talabat.Reposatory.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // ← كل decimal هيبقى 18,2
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entityType.GetProperties())

@@ -8,11 +8,11 @@ namespace Talabat.Reposatory.Data.Config
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            // ShippingAddress = Value Object (ملهاش table منفصل) → OwnsOne صح
+           
             builder.OwnsOne(o => o.ShippingAddress,
                 shippingAddress => shippingAddress.WithOwner());
 
-            // DeliveryMethod = Entity منفصلة (لها DbSet) → HasOne
+            
             builder.HasOne(o => o.DeliveryMethod)
                    .WithMany()
                    .HasForeignKey(o => o.DeliveryMethodId);

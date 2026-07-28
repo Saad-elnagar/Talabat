@@ -1,5 +1,4 @@
-﻿// Talabat.Core/Exceptions/BasketNotFoundException.cs
-namespace Talabat.Core.Exceptions
+﻿namespace Talabat.Core.Exceptions
 {
     public class BasketNotFoundException : Exception
     {

@@ -10,6 +10,6 @@ namespace Talabat.Core.Service
     {
         Task CacheResponseAsync (string key, object response, TimeSpan expiration);
         Task<string> GetCachedResponseAsync(string key);
-       // Task RemoveCacheAsync(string key); 
+       
     }
 }

@@ -9,16 +9,7 @@ using Talabat.Reposatory.Specification;
 
 namespace Talabat.Core.Specification
 {
-    //public class AddressWithUserSpecificationmc : Specification<Address>
-    //{
-    //    public AddressWithUserSpecificationmc(string userId)
-    //    : base(a => a.UserId == userId)
-    //    {
-            
-    //    }
-
-    //}
-
+  
 
 
 }

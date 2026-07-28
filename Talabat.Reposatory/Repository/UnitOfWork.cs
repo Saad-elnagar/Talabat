@@ -21,7 +21,7 @@ public class UnitOfWork : IUnitOfWork
 
         if (!_repositories.ContainsKey(type))
         {
-            //
+            
             var repositoryType = typeof(GenericRepositry<>);
             var repositoryInstance = Activator.CreateInstance(
                 repositoryType.MakeGenericType(typeof(TEntity)),

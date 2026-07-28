@@ -10,13 +10,13 @@ namespace Talabat.Reposatory.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // تم مسح الـ RenameColumn لأن العمود متعدل بالفعل في قاعدة البيانات
+           
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // تم مسح العكس أيضاً
+
         }
     }
 }

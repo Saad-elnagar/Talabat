@@ -23,7 +23,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception as needed (e.g., log it)
+               
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
 
@@ -38,7 +38,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception as needed (e.g., log it)
+               
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
         }
@@ -53,7 +53,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception as needed (e.g., log it)
+               
                 throw new Exception("An error occurred while retrieving data.", ex);
 
             }
@@ -69,7 +69,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception as needed (e.g., log it)
+                
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
         }
@@ -113,7 +113,7 @@ namespace Talabat.Reposatory.Repository
             }
             catch (Exception ex)
             {
-                // Handle the exception as needed (e.g., log it)
+
                 throw new Exception("An error occurred while retrieving data.", ex);
             }
 

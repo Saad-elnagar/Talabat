@@ -66,7 +66,7 @@ namespace Talabat.Controllers
 
             return Ok(await _tokenService.GenerateTokenAsync(user));
         }
-        //  [Authorize]
+          [Authorize]
 
 
         [Authorize(Policy = "JwtOnly")]
@@ -124,18 +124,18 @@ namespace Talabat.Controllers
 
 
 
-        //public async Task<ActionResult<AddressDto>> UpdateUserAddress(AddressDto addressDto)
-        //{
-        //    var email = User.FindFirst(ClaimTypes.Email)?.Value;
-        //    if (string.IsNullOrEmpty(email))
-        //        return Unauthorized(new APIRespose(401, "Email claim not found"));
+        public async Task<ActionResult<AddressDto>> UpdateUserAddress(AddressDto addressDto)
+        {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized(new APIRespose(401, "Email claim not found"));
 
-        //    var user = await _userManager.FindByEmailAsync(email);
-        //    if (user == null)
-        //        return Unauthorized(new APIRespose(401, "User not found"));
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return Unauthorized(new APIRespose(401, "User not found"));
 
 
-        //}
+        }
 
     }
 }

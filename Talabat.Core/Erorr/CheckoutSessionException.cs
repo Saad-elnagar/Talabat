@@ -1,5 +1,4 @@
-﻿// Talabat.Core/Exceptions/CheckoutSessionException.cs
-namespace Talabat.Core.Exceptions
+﻿namespace Talabat.Core.Exceptions
 {
     public class CheckoutSessionException : Exception
     {

@@ -1,5 +1,4 @@
-﻿// Talabat.Services/EmailService/SendGridEmailService.cs
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using Talabat.Core.Service;

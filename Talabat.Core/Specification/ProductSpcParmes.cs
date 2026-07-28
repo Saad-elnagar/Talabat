@@ -24,7 +24,6 @@ namespace Talabat.Core.Specification
         public string? search { get; set; }
 
 
-        // test
         public int? Needprice { get; set; }
 
        

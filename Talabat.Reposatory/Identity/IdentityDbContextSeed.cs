@@ -3,7 +3,7 @@ using Talabat.Core.Entitys.Identity;
 
 namespace Talabat.Reposatory.Identity
 {
-    public static class IdentityDbContextSeed  // ✅ static أحسن
+    public static class IdentityDbContextSeed  
     {
         public static async Task SeedUserAsync(UserManager<User> userManager)
         {
@@ -17,7 +17,6 @@ namespace Talabat.Reposatory.Identity
                     PhoneNumber = "1234567890"
                 };
 
-                // ✅ Password يتوافق مع الـ Rules
                 var result = await userManager.CreateAsync(user, "P@ssw0rd123");
 
                 if (!result.Succeeded)

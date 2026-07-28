@@ -1,4 +1,4 @@
-﻿// Talabat.Core/Service/IStripeSessionClient.cs
+﻿
 namespace Talabat.Core.Service
 {
     public interface IStripeSessionClient
