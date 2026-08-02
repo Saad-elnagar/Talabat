@@ -111,6 +111,18 @@ namespace Talabat
 
             #endregion
 
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                    policy.WithOrigins(builder.Configuration["FrontendUrl"] ?? "http://localhost:4200")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader());
+            });
+
+          
+          
+
             var app = builder.Build();
 
             #region Database Seeding
@@ -145,9 +157,9 @@ namespace Talabat
             {
 
                 app.MapOpenApi();
+                app.MapScalarApiReference();
 
             }
-            app.MapScalarApiReference();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -155,6 +167,7 @@ namespace Talabat
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseCors("AllowFrontend");
             app.UseRateLimiter();
 
             app.MapControllers();

@@ -14,7 +14,6 @@
             services.AddSingleton<ICachService, MultiLayerCacheService>();
             services.AddScoped<IOrderMapper, OrderMapper>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IStripeCheckoutService, StripeCheckoutService>();
             services.AddScoped<IEmailService, SendGridEmailService>();
             services.AddScoped<IStripeCheckoutService, StripeCheckoutService>();
             services.AddScoped<IStripeSessionClient, StripeSessionClient>();

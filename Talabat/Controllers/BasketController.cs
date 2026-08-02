@@ -27,7 +27,7 @@ namespace Talabat.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-             Map DTO to Entity
+           
             var basket = new CustomerBasket
             {
                 Id = basketDto.Id,

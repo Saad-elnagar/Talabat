@@ -16,78 +16,31 @@ namespace Talabat.Reposatory.Repository
             _context = context;
         }
         public async Task<IReadOnlyList<T>> GetAllAsync()
-        {
-            try
-            {
-                return await _context.Set<T>().ToListAsync();
-            }
-            catch (Exception ex)
-            {
-               
-                throw new Exception("An error occurred while retrieving data.", ex);
-            }
-
-        }
+            => await _context.Set<T>().ToListAsync();
 
         public async Task<T> GetByIdAsync(int id)
-        {
-            try
-            {
 
-                return await _context.Set<T>().FindAsync(id);
-            }
-            catch (Exception ex)
-            {
-               
-                throw new Exception("An error occurred while retrieving data.", ex);
-            }
-        }
+        => await _context.Set<T>().FindAsync(id);
+
 
         public async Task<T> GetByIdWithSpecAsync(ISpecification<T> spec)
-        {
+            => await ApplySpecification(spec).FirstOrDefaultAsync();
 
-            try
-            {
-                return await ApplySpecification(spec).FirstOrDefaultAsync();
 
-            }
-            catch (Exception ex)
-            {
-               
-                throw new Exception("An error occurred while retrieving data.", ex);
-
-            }
-        }
 
         public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecification<T> spec)
-        {
-            try
-            {
-                return await ApplySpecification(spec).ToListAsync();
+            => await ApplySpecification(spec).ToListAsync();
 
 
-            }
-            catch (Exception ex)
-            {
-                
-                throw new Exception("An error occurred while retrieving data.", ex);
-            }
-        }
+
+
+
+
+
 
 
         public async Task<int> GetCountAsync(ISpecification<T> spec)
-        {
-            try
-            {
-                return await ApplySpecification(spec).CountAsync();
-            }
-            catch (Exception ex)
-            {
-
-                throw new Exception("An error occurred while counting data.", ex);
-            }
-        }
-
+          => await ApplySpecification(spec).CountAsync();
 
 
         public async Task Add(T entity)
@@ -106,24 +59,16 @@ namespace Talabat.Reposatory.Repository
         => _context.Set<T>().Remove(entity);
 
         public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
-        {
-            try
-            {
-                return await ApplySpecification(spec).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-
-                throw new Exception("An error occurred while retrieving data.", ex);
-            }
 
 
-        }
+           => await ApplySpecification(spec).ToListAsync();
+
+
+
         public IQueryable<T> ApplySpecification(ISpecification<T> spec)
-        {
-            return Evalutore<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
 
-        }
+           => Evalutore<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
+
     }
 
 }

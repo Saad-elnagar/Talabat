@@ -16,7 +16,7 @@ namespace Talabat.Reposatory.Migrations
     partial class defult
     {
         
-        / <inheritdoc />
+       // <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

@@ -1,4 +1,6 @@
-﻿namespace Talabat.Controllers
+﻿using Talabat.Core.Exceptions;
+
+namespace Talabat.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -94,11 +96,12 @@
         public async Task<IActionResult> StripeWebhook()
         {
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            var stripeSignature = Request.Headers["Stripe-Signature"];
 
             Event stripeEvent;
             try
             {
-                stripeEvent = EventUtility.ParseEvent(json);
+                stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, _webhookSecret);
             }
             catch (StripeException ex)
             {
@@ -206,15 +209,32 @@
             }
 
             // 5. Create Order
-            var order = await _orderService.CreateOrderAsync(
+            Order order;
+            try
+            {
+                order = await _orderService.CreateOrderAsync(
 
-                buyerEmail: buyerEmail,
-                deliveryMethodId: basket.DeliveryMethodId
-                    ?? throw new InvalidOperationException($"Basket {basketId} has no delivery method set."),
-                basketId: basketId,
-        shippingAddress: shippingAddress,
-        orderStatus: OrderStatus.PaymentReceived
-        );
+                    buyerEmail: buyerEmail,
+                    deliveryMethodId: basket.DeliveryMethodId
+                        ?? throw new InvalidOperationException($"Basket {basketId} has no delivery method set."),
+                    basketId: basketId,
+                    shippingAddress: shippingAddress,
+                    orderStatus: OrderStatus.PaymentReceived
+                );
+            }
+            catch (InsufficientStockException ex)
+            {
+                // Customer already paid but stock ran out between checkout and webhook.
+                // Don't let Stripe keep retrying this webhook (it would just fail again);
+                // log loudly so the team can manually refund and follow up.
+                _logger.LogError(ex, "Order creation failed due to insufficient stock for basket {BasketId} after successful payment. Manual refund required.", basketId);
+                return;
+            }
+            catch (ProductNotFoundException ex)
+            {
+                _logger.LogError(ex, "Order creation failed, product missing for basket {BasketId} after successful payment. Manual refund required.", basketId);
+                return;
+            }
 
             if (order != null)
             {
