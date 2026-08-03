@@ -240,9 +240,16 @@ namespace Talabat.Controllers
             {
                 order.PaymentIntentId = paymentIntentId;
                 await _unitOfWork.CompleteAsync();
-                await _basketRepository.DeleteCustomerBasketAsync(basketId);
+                try
+                {
+                    await _basketRepository.DeleteCustomerBasketAsync(basketId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete basket {BasketId}", basketId);
+                }
 
-                _logger.LogInformation("Order {OrderId} created with PaymentIntent {PI}", order.Id, paymentIntentId);
+ 
             }
         }
 
