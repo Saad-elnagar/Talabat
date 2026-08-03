@@ -1,10 +1,12 @@
 ﻿// Talabat.Services/OrderService/OrderService.cs
+using Microsoft.Extensions.Logging;
 using Talabat.Core.Entitys;
 using Talabat.Core.Entitys.Order_Aggregate;
 using Talabat.Core.Exceptions;
 using Talabat.Core.Reposatory;
 using Talabat.Core.Service;
 using Talabat.Core.Specification;
+using Talabat.Reposatory.Specification;
 
 namespace Talabat.Services.OrderService
 {
@@ -12,6 +14,7 @@ namespace Talabat.Services.OrderService
     {
         private readonly IBasketRepository _basketRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<OrderService> _logger;
 
         public OrderService(IBasketRepository basketRepository, IUnitOfWork unitOfWork)
         {
@@ -27,40 +30,45 @@ namespace Talabat.Services.OrderService
 
             var basket = await _basketRepository.GetBasketAsync(basketId);
 
-
-
             if (basket == null) return null;
 
-
-
-            // Get items from the product repository
-            var productRepo = _unitOfWork.Repository<Product>();
-            var products = new List<Product>();
-
-            foreach (var item in basket.Items)
-            {
-                var product = await productRepo.GetByIdAsync(item.Id)
-                    ?? throw new ProductNotFoundException(item.Id);
-
-                if (product.StockQuantity < item.Quantity)
-                    throw new InsufficientStockException(product.Name, item.Quantity, product.StockQuantity);
-
-                products.Add(product);
-            }
-
-            // Get delivery method from the repository
             var deliveryMethod = await _unitOfWork
                 .Repository<DeliveryMethod>()
                 .GetByIdAsync(deliveryMethodId);
             if (deliveryMethod == null) return null;
 
 
+            // 1. Load and lock in the products referenced by the basket, then validate stock.
+            //    Throwing here (instead of returning null) lets callers distinguish
+            //    "no stock" from other generic failures and surface a clear message.
+            //
+            //    Fetched in a SINGLE query (WHERE Id IN (...)) instead of one query per
+            //    basket item, to avoid the N+1 problem: with a 10-item basket, looping
+            //    with GetByIdAsync would mean 10 separate round trips to the database.
+            var productRepo = _unitOfWork.Repository<Product>();
+            var productIds = basket.Items.Select(i => i.Id).ToHashSet();
+            var productsSpec = new Specification<Product>(p => productIds.Contains(p.Id)); 
+            var products = (await productRepo.GetAllWithSpecAsync(productsSpec)).ToList();
+
+
+
+            foreach (var item in basket.Items)
+            {
+                var product = products.FirstOrDefault(p => p.Id == item.Id)
+                    ?? throw new ProductNotFoundException(item.Id); 
+
+                if (product.StockQuantity < item.Quantity)
+                    throw new InsufficientStockException(product.Name, item.Quantity, product.StockQuantity);
+            }
+
+
             var subtotal = basket.Items.Sum(i => i.Price * i.Quantity);
 
-            
+
             var orderItems = basket.Items.Select(item => new OrderItem(
                 new ProductOrderIteam
                 {
+                    ProductId = item.Id,
                     ProductName = item.ProductName,
                     PictureUrl = item.PictureUrl
                 },
@@ -82,6 +90,8 @@ namespace Talabat.Services.OrderService
 
             _unitOfWork.Repository<Order>().Add(order);
 
+            // 2. Decrement stock for each product in the same SaveChanges call as the
+            //    order insert, so the order and the stock deduction commit together.
             foreach (var item in basket.Items)
             {
                 var product = products.First(p => p.Id == item.Id);
@@ -108,37 +118,45 @@ namespace Talabat.Services.OrderService
             return await _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
         }
 
-        public async Task<IReadOnlyList<DeliveryMethod>> GeAllDeliveryMethodsAsync()
-        {
-            return await _unitOfWork.Repository<DeliveryMethod>().GetAllAsync();
-        }
-
         public async Task<Order> CancelOrderAsync(string buyerEmail, int orderId)
         {
-            // Retrieve the order for the user
+            
             var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail, orderId);
             var order = await _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
+
             if (order == null) return null;
+
             if (order.OrderStatus != OrderStatus.Pending)
                 throw new InvalidOrderStateException(order.Id, order.OrderStatus);
 
-            // Update the order status to Cancelled
-            order.OrderStatus = OrderStatus.Cancelled;
-
+            // Give every unit back to stock, in the same SaveChanges as the status
+            // change, so "order cancelled" and "stock restored" happen atomically.
             var productRepo = _unitOfWork.Repository<Product>();
             foreach (var item in order.Items)
             {
                 var product = await productRepo.GetByIdAsync(item.Product.ProductId);
-                if (product == null) continue;
+                if (product == null)
+                {
+                    _logger.LogWarning("Product {ProductId} referenced by cancelled order {OrderId} no longer exists; stock not restored.", item.Product.ProductId, order.Id);
+                    continue;
+                } // product may have been deleted since the order was placed
 
                 product.StockQuantity += item.Quantity;
                 productRepo.Update(product);
             }
+
+            order.OrderStatus = OrderStatus.Cancelled;
             _unitOfWork.Repository<Order>().Update(order);
+
             var result = await _unitOfWork.CompleteAsync();
             if (result <= 0) return null;
-            return order;
 
+            return order;
+        }
+
+        public async Task<IReadOnlyList<DeliveryMethod>> GeAllDeliveryMethodsAsync()
+        {
+            return await _unitOfWork.Repository<DeliveryMethod>().GetAllAsync();
         }
     }
 }

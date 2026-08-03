@@ -3,7 +3,7 @@ namespace Talabat.Core.Entitys
 {
     public class Product : BaseEntity
     {
-        public string? search;
+        
 
         public string Name { get; set; }
         public string Description { get; set; }
