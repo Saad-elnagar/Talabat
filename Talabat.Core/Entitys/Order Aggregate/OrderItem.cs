@@ -6,8 +6,7 @@ namespace Talabat.Core.Entitys.Order_Aggregate
     {
         public OrderItem() { }
         public OrderItem(ProductOrderIteam product, decimal price, int quantity)
-        {
-            Product = product;
+        {            Product = product;
             Price = price;
             Quantity = quantity;  
        }

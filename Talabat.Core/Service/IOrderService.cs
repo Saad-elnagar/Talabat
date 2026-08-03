@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Talabat.Core.Entitys.Order_Aggregate;
+﻿using Talabat.Core.Entitys.Order_Aggregate;
 
 namespace Talabat.Core.Service
 {
@@ -12,6 +6,8 @@ namespace Talabat.Core.Service
     {
 
         Task <Order> CreateOrderAsync(string buyerEmail, int deliveryMethodId, string basketId, Address shippingAddress , OrderStatus orderStatus );
+
+        Task<Order> CancelOrderAsync(string buyerEmail, int orderId);
 
         Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string buyerEmail);
         Task<Order>GetOrderByIdSpecificAsync(string buyerEmail, int orderId);

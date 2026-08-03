@@ -7,15 +7,15 @@ using Talabat.Core.Entitys;
 
 namespace Talabat.Core.Reposatory
 {
-    public   interface  IBasketRepository 
+    public interface IBasketRepository
     {
-       
-      public  Task<CustomerBasket?> GetBasketAsync(string basketId);
 
-      public  Task<CustomerBasket?> UpdateCustomerBasketAsync(CustomerBasket basket);
+        public Task<CustomerBasket?> GetBasketAsync(string basketId);
 
-public    Task<bool> DeleteCustomerBasketAsync(string basketId);
-         
+        public Task<CustomerBasket?> UpdateCustomerBasketAsync(CustomerBasket basket);
+
+        public Task<bool> DeleteCustomerBasketAsync(string basketId);
+
 
 
 
