@@ -1,3 +1,5 @@
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -57,17 +59,32 @@ namespace Talabat
 
             builder.Services.AddMemoryCache();
 
-            builder.Services.AddRateLimiter(options =>
-            {
-                options.AddTokenBucketLimiter("Search", searchOptions =>
-                {
-                    searchOptions.TokenLimit = 20;
-                    searchOptions.TokensPerPeriod = 10;
-                    searchOptions.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+            // NOTE: the "Search" TokenBucketLimiter policy that used to live here was removed —
+            // it triggered a known race condition in System.Threading.RateLimiting
+            // (SemaphoreFullException) under normal traffic. AddRateLimiter() is kept registered
+            // (with no policies) purely because app.UseRateLimiter() further down requires the
+            // service to exist in DI.
+            builder.Services.AddRateLimiter(options => { });
 
-                });
-
-            });
+            // Health checks: hits both SQL Server databases and Redis so /health tells you
+            // immediately whether the app can't start because a dependency is down, rather
+            // than surfacing as a confusing 500 on some unrelated endpoint later.
+            // NOTE: uses small custom IHealthCheck classes (Talabat.HealthChecks) instead of
+            // the AspNetCore.HealthChecks.SqlServer/Redis packages — their AddSqlServer/AddRedis
+            // extension method signatures have changed across versions and caused a build error;
+            // this direct approach has no such version dependency.
+            builder.Services.AddHealthChecks()
+                .AddCheck(
+                    "store-db",
+                    new Talabat.HealthChecks.SqlConnectionHealthCheck(builder.Configuration.GetConnectionString("DefaultConnection")!),
+                    tags: new[] { "db", "sql", "ready" })
+                .AddCheck(
+                    "identity-db",
+                    new Talabat.HealthChecks.SqlConnectionHealthCheck(builder.Configuration.GetConnectionString("Identity")!),
+                    tags: new[] { "db", "sql", "ready" })
+                .AddCheck<Talabat.HealthChecks.RedisHealthCheck>(
+                    "redis",
+                    tags: new[] { "cache", "ready" });
 
 
             // 2. تسجيل الـ PaymentIntentService كـ Scoped Service
@@ -120,8 +137,8 @@ namespace Talabat
                           .AllowAnyHeader());
             });
 
-          
-          
+
+
 
             var app = builder.Build();
 
@@ -164,13 +181,27 @@ namespace Talabat
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            // CORS must come right after UseRouting and BEFORE UseAuthentication/UseAuthorization —
+            // otherwise the browser's CORS preflight requests never reach the CORS middleware.
             app.UseRouting();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors("AllowFrontend");
             app.UseRateLimiter();
 
             app.MapControllers();
+
+            // GET /health        -> overall status (all checks: DB + Redis)
+            // GET /health/ready  -> only "ready"-tagged checks, for load balancer / readiness probes
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
             #endregion
 
             await app.RunAsync();

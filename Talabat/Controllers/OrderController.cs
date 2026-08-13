@@ -26,8 +26,8 @@ namespace Talabat.Controllers
                 email!,
                 orderDto.deliveryMethodId,
                 orderDto.basketId,
-                address,
-                orderDto.orderStatus
+                address
+               
             );
 
             if (order == null)
@@ -94,7 +94,7 @@ namespace Talabat.Controllers
             Order order;
             try
             {
-                order = await _orderService.CancelOrderAsync(email!, id);
+                order = await _orderService.CancelOrder(email!, id);
             }
             catch (InvalidOrderStateException ex)
             {

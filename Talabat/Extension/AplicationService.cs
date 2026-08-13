@@ -1,4 +1,6 @@
-﻿namespace Talabat.Extension
+﻿using Talabat.Services.Stripe;
+
+namespace Talabat.Extension
 {
     public static class AplicationServiceExtension
     {

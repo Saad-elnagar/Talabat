@@ -1,4 +1,7 @@
-﻿using Product = Talabat.Core.Entitys.Product;
+﻿using AutoMapper;
+using Talabat.Core.Entitys;
+using Talabat.Dto;
+using Product = Talabat.Core.Entitys.Product;
 
 namespace Talabat.Helper
 {
@@ -14,7 +17,14 @@ namespace Talabat.Helper
         {
             if (!string.IsNullOrEmpty(source.PictureUrl))
             {
-                return $"{_config["ApiBaseURL"]}{source.PictureUrl}";
+                // BUG FIX: previously this concatenated ApiBaseURL and PictureUrl with no
+                // separator (e.g. "http://localhost:5208" + "images/products/x.png" =
+                // "http://localhost:5208images/products/x.png" — an invalid URL, so every
+                // product image failed to load). TrimEnd/TrimStart guarantees exactly one "/"
+                // between them regardless of whether either value already has one.
+                var baseUrl = (_config["ApiBaseURL"] ?? string.Empty).TrimEnd('/');
+                var relativePath = source.PictureUrl.TrimStart('/');
+                return $"{baseUrl}/{relativePath}";
             }
             return string.Empty;
         }

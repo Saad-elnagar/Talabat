@@ -13,7 +13,7 @@ public class ProductController : BaseController
 
 
     [CachAttribute(600)]
-    [EnableRateLimiting("Search")]
+ //   [EnableRateLimiting("Search")]
     [HttpGet]
     public async Task<ActionResult<Pagination<ProductResultToDto>>> GetProductSpec([FromQuery] ProductSpecParams specParams)
     {

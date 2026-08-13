@@ -10,6 +10,6 @@ namespace Talabat.Core.Service
     public interface IPaymentIntent
     {
         public Task<CustomerBasket> CreateOrUpdatePaymentIntent(string basketId);
-        Task<CheckoutSessionResult> CreateCheckoutSessionAsync(string basketId);
+        
     }
 }

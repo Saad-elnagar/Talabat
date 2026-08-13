@@ -1,162 +1,149 @@
-﻿// Talabat.Services/OrderService/OrderService.cs
-using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Talabat.Core.Entitys;
 using Talabat.Core.Entitys.Order_Aggregate;
-using Talabat.Core.Exceptions;
 using Talabat.Core.Reposatory;
 using Talabat.Core.Service;
 using Talabat.Core.Specification;
-using Talabat.Reposatory.Specification;
 
 namespace Talabat.Services.OrderService
 {
     public class OrderService : IOrderService
     {
-        private readonly IBasketRepository _basketRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<OrderService> _logger;
+        private readonly IBasketRepository _basketRepo;
 
-        public OrderService(IBasketRepository basketRepository, IUnitOfWork unitOfWork)
+        public OrderService(IUnitOfWork unitOfWork, IBasketRepository basketRepo)
         {
-            _basketRepository = basketRepository;
             _unitOfWork = unitOfWork;
+            _basketRepo = basketRepo;
         }
-
-        public async Task<Order> CreateOrderAsync(string buyerEmail, int deliveryMethodId,
-            string basketId, Address shippingAddress, OrderStatus orderStatus)
+       public async  Task <Order> CreateOrderAsync(string buyerEmail, int deliveryMethodId, string basketId, Address shippingAddress)
         {
 
-            // Get Basket 
+            var basket = await _basketRepo.GetBasketAsync(basketId);
 
-            var basket = await _basketRepository.GetBasketAsync(basketId);
+            if (basket?.Items?.Any() != true)
+                throw new InvalidOperationException("Basket is empty.");
 
-            if (basket == null) return null;
+          
+            var productIds = basket.Items.Select(i => i.Id).ToList();
+            var spec = new ProductsByIdsSpec(productIds);
 
-            var deliveryMethod = await _unitOfWork
-                .Repository<DeliveryMethod>()
-                .GetByIdAsync(deliveryMethodId);
-            if (deliveryMethod == null) return null;
+            var products = await _unitOfWork.Repository<Product>()
+                .ListAsync(spec);
 
+            var productDict = products.ToDictionary(p => p.Id);
 
-            // 1. Load and lock in the products referenced by the basket, then validate stock.
-            //    Throwing here (instead of returning null) lets callers distinguish
-            //    "no stock" from other generic failures and surface a clear message.
-            //
-            //    Fetched in a SINGLE query (WHERE Id IN (...)) instead of one query per
-            //    basket item, to avoid the N+1 problem: with a 10-item basket, looping
-            //    with GetByIdAsync would mean 10 separate round trips to the database.
-            var productRepo = _unitOfWork.Repository<Product>();
-            var productIds = basket.Items.Select(i => i.Id).ToHashSet();
-            var productsSpec = new Specification<Product>(p => productIds.Contains(p.Id)); 
-            var products = (await productRepo.GetAllWithSpecAsync(productsSpec)).ToList();
-
-
-
-            foreach (var item in basket.Items)
-            {
-                var product = products.FirstOrDefault(p => p.Id == item.Id)
-                    ?? throw new ProductNotFoundException(item.Id); 
-
-                if (product.StockQuantity < item.Quantity)
-                    throw new InsufficientStockException(product.Name, item.Quantity, product.StockQuantity);
-            }
-
-
-            var subtotal = basket.Items.Sum(i => i.Price * i.Quantity);
-
-
-            var orderItems = basket.Items.Select(item => new OrderItem(
-                new ProductOrderIteam
+            var orderItems = basket.Items
+                .Where(item => productDict.TryGetValue(item.Id, out _))
+                .Select(item =>
                 {
-                    ProductId = item.Id,
-                    ProductName = item.ProductName,
-                    PictureUrl = item.PictureUrl
-                },
-                item.Price,
-                item.Quantity
-            )).ToList();
+                    var product = productDict[item.Id];
+                    var productItem = new ProductOrderIteam
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Price = product.Price,
+                        PictureUrl=product.PictureUrl,
+                    };
+                    return new OrderItem(productItem, product.Price, item.Quantity);
+                })
+                .ToList();
 
+            if (!orderItems.Any())
+                throw new InvalidOperationException("No valid products found.");
 
-            var order = new Order(
-                buyerEmail: buyerEmail,
-                orderStatus: orderStatus,
-                shippingAddress: shippingAddress,
-                deliveryMethod: deliveryMethod,
-                items: orderItems,
-                subtotal: subtotal,
-                paymentIntentId: basket.PaymentId ?? ""
-            );
+            var deliveryMethod = await _unitOfWork.Repository<DeliveryMethod>()
+                .GetByIdAsync(deliveryMethodId)
+                ?? throw new ArgumentException("Invalid delivery method.");
 
+            var subtotal = orderItems.Sum(i => i.Price * i.Quantity);
 
-            _unitOfWork.Repository<Order>().Add(order);
-
-            // 2. Decrement stock for each product in the same SaveChanges call as the
-            //    order insert, so the order and the stock deduction commit together.
-            foreach (var item in basket.Items)
+            var order = new Order
             {
-                var product = products.First(p => p.Id == item.Id);
-                product.StockQuantity -= item.Quantity;
-                _unitOfWork.Repository<Product>().Update(product);
-            }
+                BuyerEmail = buyerEmail,
+                ShippingAddress = shippingAddress,
+                DeliveryMethod = deliveryMethod,
+                Items = orderItems,
+                Subtotal = subtotal
+            };
 
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (result <= 0) return null;
+            await _unitOfWork.Repository<Order>().Add(order);
+            await _unitOfWork.CompleteAsync();
 
             return order;
         }
 
-        public async Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string buyerEmail)
-        {
-            var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail);
-            return await _unitOfWork.Repository<Order>().GetAllWithSpecAsync(spec);
-        }
 
-        public async Task<Order> GetOrderByIdSpecificAsync(string buyerEmail, int orderId)
+
+
+
+
+        
+
+        public Task<Order> GetOrderByIdSpecificAsync(string buyerEmail, int orderId)
         {
             var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail, orderId);
-            return await _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
+            return _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
         }
 
-        public async Task<Order> CancelOrderAsync(string buyerEmail, int orderId)
+        public Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string buyerEmail)
         {
-            
+            var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail);
+
+            var orders = _unitOfWork.Repository<Order>().GetAllWithSpecAsync(spec);
+
+            return orders;
+
+
+        }
+        public async Task<IReadOnlyList<DeliveryMethod>> GeAllDeliveryMethodsAsync()
+        {
+            var deliveryMethods = await _unitOfWork.Repository<DeliveryMethod>().GetAllAsync();
+
+            return deliveryMethods;
+
+        }
+
+        public async Task<Order?> UpdateOrderPaymentStatusAsync(string paymentIntentId, bool paymentSucceeded)
+        {
+            var spec = new OrderByPaymentIntentIdSpecification(paymentIntentId);
+            var order = await _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
+
+            if (order == null)
+                return null;
+
+            order.OrderStatus = paymentSucceeded ? OrderStatus.PaymentReceived : OrderStatus.PaymentFailed;
+
+            _unitOfWork.Repository<Order>().Update(order);
+            await _unitOfWork.CompleteAsync();
+
+            return order;
+        }
+
+        public async Task<Order> CancelOrder(string buyerEmail, int orderId)
+        {
             var spec = new OrdersWithItemsAndOrderingSpecification(buyerEmail, orderId);
             var order = await _unitOfWork.Repository<Order>().GetByIdWithSpecAsync(spec);
 
-            if (order == null) return null;
+            if (order == null)
+                throw new InvalidOperationException("Order not found.");
 
-            if (order.OrderStatus != OrderStatus.Pending)
-                throw new InvalidOrderStateException(order.Id, order.OrderStatus);
-
-            // Give every unit back to stock, in the same SaveChanges as the status
-            // change, so "order cancelled" and "stock restored" happen atomically.
-            var productRepo = _unitOfWork.Repository<Product>();
-            foreach (var item in order.Items)
-            {
-                var product = await productRepo.GetByIdAsync(item.Product.ProductId);
-                if (product == null)
-                {
-                    _logger.LogWarning("Product {ProductId} referenced by cancelled order {OrderId} no longer exists; stock not restored.", item.Product.ProductId, order.Id);
-                    continue;
-                } // product may have been deleted since the order was placed
-
-                product.StockQuantity += item.Quantity;
-                productRepo.Update(product);
-            }
+            // Guard against cancelling an order that's already been paid/shipped —
+            // adjust this check based on which OrderStatus values you actually have.
+            if (order.OrderStatus == OrderStatus.PaymentReceived)
+                throw new InvalidOperationException("Cannot cancel an order that has already been paid.");
 
             order.OrderStatus = OrderStatus.Cancelled;
-            _unitOfWork.Repository<Order>().Update(order);
 
-            var result = await _unitOfWork.CompleteAsync();
-            if (result <= 0) return null;
+            _unitOfWork.Repository<Order>().Update(order);
+            await _unitOfWork.CompleteAsync();
 
             return order;
-        }
-
-        public async Task<IReadOnlyList<DeliveryMethod>> GeAllDeliveryMethodsAsync()
-        {
-            return await _unitOfWork.Repository<DeliveryMethod>().GetAllAsync();
         }
     }
 }
