@@ -1,5 +1,7 @@
 # Talabat — E-Commerce Backend API
 
+[![Build](https://github.com/Saad-elnagar/Talabat/actions/workflows/dotnet-build.yml/badge.svg?branch=master)](https://github.com/Saad-elnagar/Talabat/actions/workflows/dotnet-build.yml)
+
 A multi-project e-commerce backend built with **C#, .NET 9, ASP.NET Core Web API, Entity Framework Core, SQL Server, Redis, JWT, and Stripe**.
 
 The project explores backend application architecture, identity, product catalog queries, basket and order workflows, caching, and payment-intent integration.
