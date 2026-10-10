@@ -361,3 +361,18 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Local developer configuration and credentials
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
+**/appsettings.Secrets.json
+**/secrets.json
+**/secrets.*.json
+UserSecrets/
+
+# Local IDE state and test artifacts
+.idea/
+TestResults/
+coverage/
