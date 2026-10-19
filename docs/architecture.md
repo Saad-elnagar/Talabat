@@ -90,8 +90,3 @@ sequenceDiagram
   API->>Cache: Delete completed basket
 ```
 
-## Redis cache in VS Code
-
-Install the recommended **Redis for VS Code** extension (`redis.redis-for-vscode`). Create a connection to the Redis server configured in `ConnectionStrings:Redis` (the local default is `localhost:6379`). The extension browses Redis keys and data types directly; use the app's cache diagnostics endpoint to inspect the keys the API reports. Keep connection passwords out of workspace settings and committed files.
-
-The recommended **Markdown Mermaid** extension (`bierner.markdown-mermaid`) renders the diagrams in VS Code Markdown preview. Open this file and run **Markdown: Open Preview**.
