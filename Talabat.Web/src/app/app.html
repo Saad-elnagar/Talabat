@@ -1,0 +1,373 @@
+<div class="announcement">
+  <span>Everything you need, all in one place</span>
+  <span class="announcement-right">Shop online with talabat</span>
+</div>
+
+<header class="site-header">
+  <a class="brand-mark" href="/" aria-label="Talabat home" (click)="$event.preventDefault(); setView('shop')">
+    <span class="brand-icon">t</span>
+    <span class="brand-name">talabat</span>
+  </a>
+
+  <nav class="main-nav" aria-label="Main navigation">
+    <button class="nav-link" [class.active]="view === 'shop'" (click)="setView('shop')">Shop</button>
+    <button class="nav-link" [class.active]="view === 'orders'" (click)="setView('orders')">My orders</button>
+  </nav>
+
+  <div class="header-actions">
+    @if (user) {
+      <button class="account-button signed-in" (click)="logout()">
+        <span class="account-avatar">{{ user.displayName.slice(0, 1).toUpperCase() }}</span>
+        <span class="account-label">{{ user.displayName }}<small>Sign out</small></span>
+      </button>
+    } @else {
+      <button class="account-button" (click)="openAuth('login')">
+        <span class="account-glyph">♙</span>
+        <span class="account-label">Account<small>Sign in</small></span>
+      </button>
+    }
+    <button class="bag-button" aria-label="Open shopping bag" (click)="basketOpen = true">
+      <span class="bag-glyph">▱</span>
+      <span class="bag-label">Bag</span>
+      <span class="bag-count">{{ basketCount }}</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  @if (view === 'shop') {
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> THE TALABAT WAY TO SHOP</span>
+        <h1>Your favourites.<br /><em>At your door.</em></h1>
+        <p>Browse the collection, add what you need, and place your order in just a few steps.</p>
+        <button class="primary-button hero-button" (click)="scrollToCatalog()">
+          Start shopping <span aria-hidden="true">↓</span>
+        </button>
+        <div class="hero-proof">
+          <span class="proof-avatars"><i>✓</i><i>✓</i><i>✓</i></span>
+          <span><strong>Easy ordering</strong> from browsing to checkout</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-label="Shop the Talabat collection">
+        <div class="hero-disc"></div>
+        <div class="hero-sticker"><span>SHOP</span><strong>YOUR<br />FAVOURITES</strong><i>✳</i></div>
+        <div class="hero-photo">
+          @if (products.length) {
+            <img [src]="imageUrl(products[0].pictureUrl)" [alt]="products[0].name" />
+          } @else {
+            <span class="hero-placeholder" aria-hidden="true">t</span>
+          }
+        </div>
+        <div class="hero-note"><span class="note-check">✓</span><span>Easy online<br /><strong>ordering</strong></span></div>
+        <div class="hero-sparkle sparkle-one">✳</div>
+        <div class="hero-sparkle sparkle-two">✦</div>
+      </div>
+    </section>
+
+    <section class="perks" aria-label="Our service promises">
+      <div class="perk"><span class="perk-icon green">⌕</span><span><strong>Find what you need</strong><small>Search and filter the collection</small></span></div>
+      <div class="perk"><span class="perk-icon peach">▱</span><span><strong>Your basket, your way</strong><small>Update quantities whenever you like</small></span></div>
+      <div class="perk"><span class="perk-icon lavender">✓</span><span><strong>Simple checkout</strong><small>Secure payment with Stripe</small></span></div>
+    </section>
+
+    <section id="catalog" class="catalog-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">SHOP ONLINE</span>
+          <h2>Browse the <em>collection.</em></h2>
+        </div>
+        <span class="result-count">{{ page?.count ?? 0 }} products</span>
+      </div>
+
+      <div class="catalog-toolbar">
+        <form class="search-form" (ngSubmit)="submitSearch()">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input name="search" [(ngModel)]="searchText" placeholder="Search products…" aria-label="Search products" />
+          @if (searchText) {
+            <button class="clear-search" type="button" aria-label="Clear search" (click)="searchText = ''; submitSearch()">×</button>
+          }
+        </form>
+        <div class="filter-group">
+          <label class="select-wrap">
+            <span class="sr-only">Filter by brand</span>
+            <select name="brand" [(ngModel)]="selectedBrand" (ngModelChange)="updateFilters()">
+              <option value="">All brands</option>
+              @for (brand of brands; track brand.id) {
+                <option [value]="brand.id">{{ brand.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="select-wrap">
+            <span class="sr-only">Filter by type</span>
+            <select name="type" [(ngModel)]="selectedType" (ngModelChange)="updateFilters()">
+              <option value="">All categories</option>
+              @for (type of types; track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="select-wrap sort-select">
+            <span class="sr-only">Sort products</span>
+            <select name="sort" [(ngModel)]="sort" (ngModelChange)="updateFilters()">
+              <option value="">Featured</option>
+              <option value="priceAsc">Price: low to high</option>
+              <option value="priceDesc">Price: high to low</option>
+            </select>
+          </label>
+          @if (search || selectedBrand || selectedType || sort) {
+            <button class="text-button" (click)="clearFilters()">Clear filters</button>
+          }
+        </div>
+      </div>
+
+      @if (loadingProducts) {
+        <div class="product-grid loading-grid" aria-label="Loading products">
+          @for (skeleton of [1, 2, 3, 4]; track skeleton) {
+            <div class="product-skeleton"><div></div><i></i><i></i></div>
+          }
+        </div>
+      } @else if (productError) {
+        <div class="empty-state">
+          <span class="empty-icon">!</span>
+          <h3>We couldn't load the collection</h3>
+          <p>{{ productError }}</p>
+          <button class="secondary-button" (click)="loadProducts()">Try again</button>
+        </div>
+      } @else if (products.length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">⌕</span>
+          <h3>No finds this time</h3>
+          <p>Try another search or clear your filters.</p>
+          <button class="secondary-button" (click)="clearFilters()">Show everything</button>
+        </div>
+      } @else {
+        <div class="product-grid">
+          @for (product of products; track product.id) {
+            <article class="product-card">
+              <button class="product-image-button" [attr.aria-label]="'View ' + product.name" (click)="openProduct(product)">
+                <span class="product-badge">{{ product.productType }}</span>
+                <img [src]="imageUrl(product.pictureUrl)" [alt]="product.name" loading="lazy" />
+                <span class="quick-view">Quick look <b>↗</b></span>
+              </button>
+              <div class="product-info">
+                <div class="product-brand">{{ product.productBrand }}</div>
+                <button class="product-title" (click)="openProduct(product)">{{ product.name }}</button>
+                <div class="product-bottom">
+                  <strong>{{ formatPrice(product.price) }}</strong>
+                  <button class="add-button" [disabled]="basketBusy" [attr.aria-label]="'Add ' + product.name + ' to bag'" (click)="addToBasket(product)">+</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+        @if (pageCount > 1) {
+          <div class="pagination">
+            <button class="page-arrow" [disabled]="pageIndex === 1" (click)="changePage(pageIndex - 1)" aria-label="Previous page">←</button>
+            @for (pageNumber of pageNumbers; track pageNumber) {
+              <button class="page-number" [class.current]="pageIndex === pageNumber" (click)="changePage(pageNumber)">{{ pageNumber }}</button>
+            }
+            <button class="page-arrow" [disabled]="pageIndex === pageCount" (click)="changePage(pageIndex + 1)" aria-label="Next page">→</button>
+          </div>
+        }
+      }
+    </section>
+
+    <section class="closing-banner">
+      <div class="closing-flower">✳</div>
+      <div><span class="eyebrow">READY WHEN YOU ARE</span><h2>Your next order<br /><em>starts right here.</em></h2></div>
+      <button class="light-button" (click)="scrollToCatalog()">Browse products <span>↗</span></button>
+    </section>
+  } @else if (view === 'orders') {
+    <section class="page-content">
+      <div class="section-heading orders-heading">
+        <div><span class="eyebrow">YOUR ACCOUNT</span><h2>Orders, <em>at a glance.</em></h2></div>
+        @if (user) { <span class="signed-in-email">{{ user.email }}</span> }
+      </div>
+      @if (!user) {
+        <div class="empty-state"><span class="empty-icon">♙</span><h3>Sign in to see your orders</h3><p>Your past purchases will be right here.</p><button class="primary-button" (click)="openAuth('login')">Sign in</button></div>
+      } @else if (ordersLoading) {
+        <div class="empty-state"><span class="loader"></span><p>Finding your orders…</p></div>
+      } @else if (ordersError) {
+        <div class="empty-state"><span class="empty-icon">!</span><h3>Couldn't load your orders</h3><p>{{ ordersError }}</p><button class="secondary-button" (click)="loadOrders()">Try again</button></div>
+      } @else if (!orders?.orders?.length) {
+        <div class="empty-state"><span class="empty-icon">♡</span><h3>Nothing here just yet</h3><p>Your next favorite find is waiting in the shop.</p><button class="primary-button" (click)="setView('shop')">Explore the shop</button></div>
+      } @else {
+        <div class="order-summary">
+          <div><span>Total orders</span><strong>{{ orders?.totalOrders }}</strong></div>
+          <div><span>Lifetime spend</span><strong>{{ formatPrice(orders?.totalSpent ?? 0) }}</strong></div>
+        </div>
+        <div class="order-list">
+          @for (order of orders?.orders ?? []; track order.id) {
+            <article class="order-card">
+              <button class="order-overview" (click)="toggleOrder(order)">
+                <span class="order-icon">↗</span>
+                <span class="order-main"><strong>Order #{{ order.id }}</strong><small>{{ order.orderDate | date:'longDate' }}</small></span>
+                <span class="order-status">{{ order.orderStatus }}</span>
+                <strong class="order-total">{{ formatPrice(order.subtotal) }}</strong>
+                <span class="expand-arrow">{{ expandedOrderId === order.id ? '−' : '+' }}</span>
+              </button>
+              @if (expandedOrderId === order.id) {
+                <div class="order-items">
+                  @for (item of order.items; track item.productId) {
+                    <div class="order-item"><img [src]="imageUrl(item.pictureUrl)" [alt]="item.productName" /><span>{{ item.productName }}<small>Qty {{ item.quantity }}</small></span><strong>{{ formatPrice(item.price * item.quantity) }}</strong></div>
+                  }
+                </div>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <section class="page-content">
+      <div class="section-heading orders-heading">
+        <div><span class="eyebrow">DEVELOPER TOOLS</span><h2>Cache <em>inspector.</em></h2></div>
+        <button class="secondary-button" (click)="loadCacheKeys()">Refresh keys ↻</button>
+      </div>
+      <p class="page-intro">Live cache keys reported by the API cache service. Key visibility depends on cache activity in this app instance.</p>
+      @if (cacheLoading) {
+        <div class="empty-state"><span class="loader"></span><p>Reading cache keys…</p></div>
+      } @else if (cacheError) {
+        <div class="empty-state"><span class="empty-icon">!</span><h3>Cache keys are unavailable</h3><p>{{ cacheError }}</p></div>
+      } @else if (!cacheKeys.length) {
+        <div class="empty-state"><span class="empty-icon">⌁</span><h3>No live keys yet</h3><p>Browse products first, then refresh this view.</p><button class="primary-button" (click)="setView('shop')">Browse the shop</button></div>
+      } @else {
+        <div class="cache-list">
+          @for (key of cacheKeys; track key) {
+            <div class="cache-key"><span class="cache-dot"></span><code>{{ key }}</code><span class="cache-kind">API cache</span></div>
+          }
+        </div>
+      }
+    </section>
+  }
+</main>
+
+<footer class="site-footer">
+  <a class="brand-mark footer-brand" href="/" (click)="$event.preventDefault(); setView('shop')"><span class="brand-icon">t</span><span class="brand-name">talabat</span></a>
+  <span>Shop what you need with talabat.</span>
+  <span>Good food. Great mood. <b>✳</b></span>
+</footer>
+
+@if (basketOpen) {
+  <div class="overlay" (click)="basketOpen = false">
+    <aside class="basket-drawer" role="dialog" aria-modal="true" aria-labelledby="bag-title" (click)="$event.stopPropagation()">
+      <div class="drawer-heading"><div><span class="eyebrow">YOUR GOOD FINDS</span><h2 id="bag-title">Your bag <em>({{ basketCount }})</em></h2></div><button class="icon-button" aria-label="Close bag" (click)="basketOpen = false">×</button></div>
+      @if (!basket.items.length) {
+        <div class="empty-state bag-empty"><span class="empty-icon">♡</span><h3>Your bag is taking a breather</h3><p>Find something lovely to put in it.</p><button class="primary-button" (click)="basketOpen = false; setView('shop')">Browse the shop</button></div>
+      } @else {
+        <div class="basket-items">
+          @for (item of basket.items; track item.id) {
+            <article class="basket-item">
+              <img [src]="imageUrl(item.pictureUrl)" [alt]="item.productName" />
+              <div class="basket-item-info"><span class="product-brand">{{ item.brand }}</span><strong>{{ item.productName }}</strong><small>{{ formatPrice(item.price) }} each</small><div class="quantity-control"><button [disabled]="basketBusy" (click)="changeQuantity(item, item.quantity - 1)" aria-label="Decrease quantity">−</button><span>{{ item.quantity }}</span><button [disabled]="basketBusy" (click)="changeQuantity(item, item.quantity + 1)" aria-label="Increase quantity">+</button></div></div>
+              <strong class="basket-line-price">{{ formatPrice(item.price * item.quantity) }}</strong>
+            </article>
+          }
+        </div>
+        <div class="drawer-bottom">
+          <div class="subtotal-line"><span>Subtotal</span><strong>{{ formatPrice(subtotal) }}</strong></div>
+          <p>Delivery and payment are calculated at checkout.</p>
+          <button class="primary-button checkout-button" [disabled]="basketBusy" (click)="basketOpen = false; openCheckout()">Continue to checkout <span>→</span></button>
+          <button class="text-button clear-bag" [disabled]="basketBusy" (click)="removeBasket()">Empty bag</button>
+        </div>
+      }
+    </aside>
+  </div>
+}
+
+@if (authOpen) {
+  <div class="overlay" (click)="closeModals()">
+    <section class="dialog auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" (click)="$event.stopPropagation()">
+      <button class="icon-button dialog-close" aria-label="Close" (click)="closeModals()">×</button>
+      <span class="dialog-flower">✳</span>
+      <span class="eyebrow">{{ authMode === 'login' ? 'WELCOME BACK' : 'MAKE YOURSELF AT HOME' }}</span>
+      <h2 id="auth-title">{{ authMode === 'login' ? 'Welcome back.' : 'Join talabat.' }}</h2>
+      <p class="dialog-copy">{{ authMode === 'login' ? 'Sign in to continue shopping.' : 'Create an account to get started.' }}</p>
+      <form class="form-stack" (ngSubmit)="submitAuth()">
+        @if (authMode === 'register') {
+          <label>Your name<input name="displayName" [(ngModel)]="registerName" required autocomplete="name" /></label>
+          <label>Username<input name="username" [(ngModel)]="registerUsername" required autocomplete="username" /></label>
+          <label>Phone number<input name="phone" [(ngModel)]="registerPhone" required autocomplete="tel" /></label>
+        }
+        <label>Email address<input name="email" type="email" [(ngModel)]="authEmail" required autocomplete="email" /></label>
+        <label>Password<input name="password" type="password" [(ngModel)]="authPassword" required minlength="6" autocomplete="current-password" /></label>
+        @if (authError) { <p class="form-error">{{ authError }}</p> }
+        <button class="primary-button full-button" [disabled]="authBusy">{{ authBusy ? 'Just a moment…' : (authMode === 'login' ? 'Sign in' : 'Create account') }}</button>
+      </form>
+      <p class="switch-auth">{{ authMode === 'login' ? 'New around here?' : 'Already have an account?' }} <button (click)="authMode = authMode === 'login' ? 'register' : 'login'; authError = ''">{{ authMode === 'login' ? 'Create an account' : 'Sign in' }}</button></p>
+    </section>
+  </div>
+}
+
+@if (checkoutOpen) {
+  <div class="overlay checkout-overlay" (click)="closeModals()">
+    <section class="dialog checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-title" (click)="$event.stopPropagation()">
+      <div class="drawer-heading"><div><span class="eyebrow">ALMOST YOURS</span><h2 id="checkout-title">Checkout <em>with care.</em></h2></div><button class="icon-button" aria-label="Close checkout" (click)="closeModals()">×</button></div>
+      <div class="checkout-layout">
+        <div class="checkout-form-column">
+          <div class="checkout-step"><span class="step-number">01</span><div><h3>Where should we bring it?</h3><p>Your delivery address</p></div></div>
+          <div class="address-fields">
+            <label>First name<input name="firstName" [(ngModel)]="shippingAddress.firstName" autocomplete="given-name" /></label>
+            <label>Last name<input name="lastName" [(ngModel)]="shippingAddress.lastName" autocomplete="family-name" /></label>
+            <label class="field-wide">Street address<input name="street" [(ngModel)]="shippingAddress.street" autocomplete="street-address" /></label>
+            <label>City<input name="city" [(ngModel)]="shippingAddress.city" autocomplete="address-level2" /></label>
+            <label>State / region<input name="state" [(ngModel)]="shippingAddress.state" autocomplete="address-level1" /></label>
+          </div>
+          <div class="checkout-step delivery-step"><span class="step-number">02</span><div><h3>Choose a delivery</h3><p>Pick what works for you</p></div></div>
+          @if (!deliveryMethods.length) {
+            <p class="muted-note">Loading available delivery options…</p>
+          } @else {
+            <div class="delivery-options">
+              @for (method of deliveryMethods; track method.id) {
+                <label class="delivery-option" [class.selected]="selectedDeliveryId === method.id">
+                  <input type="radio" name="delivery" [checked]="selectedDeliveryId === method.id" (change)="selectedDeliveryId = method.id" />
+                  <span class="radio-dot"></span>
+                  <span class="delivery-copy"><strong>{{ method.shortName }}</strong><small>{{ method.deliveryTime }} · {{ method.description }}</small></span>
+                  <strong>{{ formatPrice(method.cost) }}</strong>
+                </label>
+              }
+            </div>
+          }
+          @if (checkoutError) { <p class="form-error checkout-error">{{ checkoutError }}</p> }
+          @if (!paymentReady) {
+            <button class="primary-button full-button payment-start" [disabled]="checkoutBusy || !deliveryMethods.length" (click)="continueToPayment()">{{ checkoutBusy ? 'Preparing secure checkout…' : 'Continue to secure payment' }} <span>→</span></button>
+          } @else {
+            <div class="checkout-step payment-step"><span class="step-number">03</span><div><h3>Payment details</h3><p>Secure card payment powered by Stripe</p></div></div>
+            <div id="stripe-payment-element" class="stripe-payment-element"></div>
+            <button class="primary-button full-button payment-start" [disabled]="checkoutBusy" (click)="confirmPayment()">{{ checkoutBusy ? 'Confirming payment…' : 'Pay ' + formatPrice(checkoutTotal) }} <span>→</span></button>
+          }
+          <p class="secure-note">⌑ &nbsp;Your payment details are encrypted and secure.</p>
+        </div>
+        <aside class="checkout-summary">
+          <span class="eyebrow">IN YOUR BAG</span>
+          <div class="summary-items">
+            @for (item of basket.items; track item.id) {
+              <div class="summary-item"><span class="summary-quantity">{{ item.quantity }}</span><img [src]="imageUrl(item.pictureUrl)" [alt]="item.productName" /><span>{{ item.productName }}</span><strong>{{ formatPrice(item.price * item.quantity) }}</strong></div>
+            }
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-line"><span>Subtotal</span><span>{{ formatPrice(subtotal) }}</span></div>
+          <div class="summary-line"><span>Delivery</span><span>{{ selectedDelivery ? formatPrice(selectedDelivery.cost) : '—' }}</span></div>
+          <div class="summary-divider"></div>
+          <div class="summary-line summary-total"><strong>Total</strong><strong>{{ formatPrice(checkoutTotal) }}</strong></div>
+          <p class="summary-currency">Prices are shown in Egyptian pounds.</p>
+        </aside>
+      </div>
+    </section>
+  </div>
+}
+
+@if (selectedProduct) {
+  <div class="overlay" (click)="selectedProduct = null">
+    <section class="dialog product-dialog" role="dialog" aria-modal="true" [attr.aria-label]="selectedProduct.name" (click)="$event.stopPropagation()">
+      <button class="icon-button dialog-close" aria-label="Close product" (click)="selectedProduct = null">×</button>
+      <div class="product-detail-image"><span class="product-badge">{{ selectedProduct.productType }}</span><img [src]="imageUrl(selectedProduct.pictureUrl)" [alt]="selectedProduct.name" /></div>
+      <div class="product-detail-copy"><span class="eyebrow">{{ selectedProduct.productBrand }}</span><h2>{{ selectedProduct.name }}</h2><p>{{ selectedProduct.description }}</p><div class="product-detail-bottom"><strong>{{ formatPrice(selectedProduct.price) }}</strong><button class="primary-button" [disabled]="basketBusy" (click)="addToBasket(selectedProduct!); selectedProduct = null">Add to bag <span>+</span></button></div></div>
+    </section>
+  </div>
+}
+
+@if (toastMessage) {
+  <div class="toast" [class.toast-error]="toastKind === 'error'" role="status"><span>{{ toastKind === 'error' ? '!' : '✓' }}</span>{{ toastMessage }}</div>
+}

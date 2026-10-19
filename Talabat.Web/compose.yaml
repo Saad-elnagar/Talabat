@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Talabat.Api/Dockerfile
+    container_name: talabat-api
+    network_mode: host
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://127.0.0.1:5080
+    volumes:
+      - ${HOME}/.microsoft/usersecrets/8a3385d6-5948-4def-951d-fa9ea1b6bca4/secrets.json:/root/.microsoft/usersecrets/8a3385d6-5948-4def-951d-fa9ea1b6bca4/secrets.json:ro
+    restart: unless-stopped
+
+  storefront:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: talabat-storefront
+    network_mode: host
+    environment:
+      API_UPSTREAM: ${TALABAT_API_UPSTREAM:-127.0.0.1:5080}
+      FRONTEND_BIND: ${TALABAT_FRONTEND_BIND:-127.0.0.1}
+      FRONTEND_PORT: ${TALABAT_FRONTEND_PORT:-4200}
+    depends_on:
+      - api
+    restart: unless-stopped

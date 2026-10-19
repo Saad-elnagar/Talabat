@@ -117,9 +117,10 @@ namespace Talabat.Api.Controllers
             var userWithAddress = await _userManager.Users
            .Include(u => u.address)
            .FirstOrDefaultAsync(u => u.Id == user.Id);
-            var address = _mapper.Map<Address, AddressDto>(user.address);
+            if (userWithAddress?.address is null)
+                return Ok(null);
 
-            return Ok(address);
+            return Ok(_mapper.Map<Address, AddressDto>(userWithAddress.address));
 
 
 

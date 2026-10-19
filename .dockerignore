@@ -1,0 +1,17 @@
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.angular
+.git
+.vs
+TestResults
+*.user
+*.suo
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/secrets.*.json
+**/UserSecrets
+**/appsettings.Local.json

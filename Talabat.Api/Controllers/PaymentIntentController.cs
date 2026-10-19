@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Talabat.Domain.Repositories;
 using Talabat.Application.DTOs;
 
@@ -8,10 +9,21 @@ namespace Talabat.Api.Controllers
     {
 
         private readonly IPaymentIntent _paymentIntent;
-        public PaymentIntentController(IPaymentIntent paymentIntent)
+        private readonly IConfiguration _configuration;
+
+        public PaymentIntentController(IPaymentIntent paymentIntent, IConfiguration configuration)
         {
             _paymentIntent = paymentIntent;
+            _configuration = configuration;
         }
+
+        [HttpGet("config")]
+        public IActionResult GetPaymentConfiguration()
+        {
+            var publishableKey = _configuration["StripeSettings:Publishablekey"];
+            return Ok(new { publishableKey });
+        }
+
         [HttpPost("{basketId}")]
         public async Task<ActionResult<CustomerBasketDto>> CreateOrUpdatePaymentIntent(string basketId)
         {

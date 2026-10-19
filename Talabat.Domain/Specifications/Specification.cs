@@ -43,10 +43,5 @@ namespace Talabat.Domain.Specifications
             Skip = skip;
             Take = take;
         }
-
-        public Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

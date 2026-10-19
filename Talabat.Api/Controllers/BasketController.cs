@@ -35,6 +35,7 @@ namespace Talabat.Api.Controllers
             var basket = new CustomerBasket
             {
                 Id = basketDto.Id,
+                DeliveryMethodId = basketDto.DeliveryMethodId,
                 Items = basketDto.Items.Select(i => new BasketIteam
                 {
                     Id = i.Id,
