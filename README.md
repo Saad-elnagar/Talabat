@@ -31,16 +31,15 @@ The project explores backend application architecture, identity, product catalog
 ## Architecture
 
 ```text
-Talabat.Api/
- Controllers, filters, API configuration, static files
-      | references
-      v
-Talabat.Infrastructure/ -----------------> Talabat.Application/
- EF Core, repositories, migrations          Use cases, contracts, DTOs
- Redis, Stripe, identity                         |
-      | references                               | references
-      +-------------------------> Talabat.Domain/
-                                   Entities and contracts
+Backend/
+  Talabat.Api/
+  Talabat.Application/
+  Talabat.Domain/
+  Talabat.Infrastructure/
+  Talabat.sln
+Frontend/
+  Talabat.Web/
+docs/
 ```
 
 ### Project responsibilities
@@ -66,17 +65,17 @@ Dependencies point inward: the API composes Application and Infrastructure, Infr
 From the repository root:
 
 ```bash
-dotnet restore Talabat.sln
-dotnet user-secrets init --project Talabat.Api/Talabat.Api.csproj
+dotnet restore Backend/Talabat.sln
+dotnet user-secrets init --project Backend/Talabat.Api/Talabat.Api.csproj
 ```
 
 Configure secrets locally instead of committing them to `appsettings.json`:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_SERVER_CONNECTION_STRING" --project Talabat.Api/Talabat.Api.csproj
-dotnet user-secrets set "ConnectionStrings:Identity" "YOUR_IDENTITY_DATABASE_CONNECTION_STRING" --project Talabat.Api/Talabat.Api.csproj
-dotnet user-secrets set "JwtSettings:SecretKey" "YOUR_LONG_RANDOM_JWT_SECRET" --project Talabat.Api/Talabat.Api.csproj
-dotnet user-secrets set "StripeSettings:Secretkey" "YOUR_STRIPE_TEST_SECRET_KEY" --project Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_SERVER_CONNECTION_STRING" --project Backend/Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "ConnectionStrings:Identity" "YOUR_IDENTITY_DATABASE_CONNECTION_STRING" --project Backend/Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "JwtSettings:SecretKey" "YOUR_LONG_RANDOM_JWT_SECRET" --project Backend/Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "StripeSettings:Secretkey" "YOUR_STRIPE_TEST_SECRET_KEY" --project Backend/Talabat.Api/Talabat.Api.csproj
 ```
 
 Make sure Redis is reachable at the configured `ConnectionStrings:Redis` address. The repository defaults this to `localhost`.
@@ -84,14 +83,14 @@ Make sure Redis is reachable at the configured `ConnectionStrings:Redis` address
 Start the API:
 
 ```bash
-dotnet run --project Talabat.Api/Talabat.Api.csproj
+dotnet run --project Backend/Talabat.Api/Talabat.Api.csproj
 ```
 
 Create EF Core migrations in the Infrastructure project and use the API as the startup project:
 
 ```bash
-dotnet ef migrations add <MigrationName> --project Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Talabat.Api/Talabat.Api.csproj --context StoreContext
-dotnet ef migrations add <MigrationName> --project Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Talabat.Api/Talabat.Api.csproj --context AppIdentityDbContext --output-dir Identity/Migrations
+dotnet ef migrations add <MigrationName> --project Backend/Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Backend/Talabat.Api/Talabat.Api.csproj --context StoreContext
+dotnet ef migrations add <MigrationName> --project Backend/Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Backend/Talabat.Api/Talabat.Api.csproj --context AppIdentityDbContext --output-dir Identity/Migrations
 ```
 
 On startup, the application attempts to apply EF Core migrations and seed sample data. The database connections must be configured and SQL Server must be available before relying on the seeded data.
@@ -100,12 +99,12 @@ In Development, OpenAPI is mapped by the application and Scalar is available for
 
 ## Angular Frontend
 
-The storefront is a separate Angular 21 project in `Talabat.Web`. It uses the API for the catalog, account, basket, delivery options, Stripe payment intents, orders, and cache-key diagnostics. The frontend does not contain backend secrets.
+The storefront is a separate Angular 21 project in `Frontend/Talabat.Web`. It uses the API for the catalog, account, basket, delivery options, Stripe payment intents, orders, and cache-key diagnostics. The frontend does not contain backend secrets.
 
 The local Compose file runs the API and storefront in separate containers. It reads the existing API User Secrets file read-only; no credentials are copied into the repository or frontend image. SQL Server and Redis remain in their existing containers.
 
 ```bash
-docker compose -f Talabat.Web/compose.yaml up --build -d
+docker compose up --build -d
 ```
 
 Open `http://127.0.0.1:4200`. The Angular container proxies API and product-image requests to the API container. Both app containers use the Linux host network so they can reach the existing SQL Server and Redis containers through their loopback ports. The API User Secrets file must exist at the normal .NET Linux User Secrets location for this project.
@@ -113,21 +112,25 @@ Open `http://127.0.0.1:4200`. The Angular container proxies API and product-imag
 To run either project outside Docker, start the API on `http://127.0.0.1:5080`:
 
 ```bash
-dotnet run --project Talabat.Api/Talabat.Api.csproj --urls http://127.0.0.1:5080
+dotnet run --project Backend/Talabat.Api/Talabat.Api.csproj --urls http://127.0.0.1:5080
 ```
 
-Then use a terminal in `Talabat.Web`:
+Then use a terminal in `Frontend/Talabat.Web`:
 
 ```bash
 npm ci
 npm start
 ```
 
-The Angular development proxy in `Talabat.Web/proxy.conf.json` forwards to `http://127.0.0.1:5080`. Stop the app containers with:
+The Angular development proxy in `Frontend/Talabat.Web/proxy.conf.json` forwards to `http://127.0.0.1:5080`. Stop the app containers with:
 
 ```bash
-docker compose -f Talabat.Web/compose.yaml down
+docker compose down
 ```
+
+## Architecture diagrams and VS Code
+
+See [docs/architecture.md](docs/architecture.md) for the backend/frontend hierarchy, Angular file roles, and request workflows. VS Code recommends Angular Language Service and Redis for VS Code; install the recommendations when prompted. In Redis for VS Code, connect to the same Redis host and port configured under `ConnectionStrings:Redis` to browse live cache keys and values. Keep Redis credentials in the extension's connection profile, not in the repository.
 
 ## Configuration & Security
 
@@ -143,4 +146,4 @@ docker compose -f Talabat.Web/compose.yaml down
 - Implementing identity, token-based authentication, caching, and rate limiting.
 - Connecting order workflows to payment-intent handling.
 - Documenting and testing an API through OpenAPI tooling.
-
+.

@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ..
+      context: ./Backend
       dockerfile: Talabat.Api/Dockerfile
     container_name: talabat-api
     network_mode: host
@@ -14,7 +14,7 @@ services:
 
   storefront:
     build:
-      context: .
+      context: ./Frontend/Talabat.Web
       dockerfile: Dockerfile
     container_name: talabat-storefront
     network_mode: host
