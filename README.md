@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/Saad-elnagar/Talabat/actions/workflows/dotnet-build.yml/badge.svg?branch=master)](https://github.com/Saad-elnagar/Talabat/actions/workflows/dotnet-build.yml)
 
-A multi-project e-commerce backend built with **C#, .NET 9, ASP.NET Core Web API, Entity Framework Core, SQL Server, Redis, JWT, and Stripe**.
+A multi-project e-commerce backend built with **C#, .NET 10, ASP.NET Core Web API, Entity Framework Core, SQL Server, Redis, JWT, and Stripe**.
 
 The project explores backend application architecture, identity, product catalog queries, basket and order workflows, caching, and payment-intent integration.
 
@@ -20,7 +20,7 @@ The project explores backend application architecture, identity, product catalog
 
 ## Tech Stack
 
-- **Language / Runtime:** C#, .NET 9
+- **Language / Runtime:** C#, .NET 10
 - **API:** ASP.NET Core Web API
 - **Persistence:** Entity Framework Core, SQL Server
 - **Authentication:** ASP.NET Core Identity, JWT
@@ -31,37 +31,32 @@ The project explores backend application architecture, identity, product catalog
 ## Architecture
 
 ```text
-Talabat/
-  Controllers, DTOs, middleware, API configuration
-        |
-        v
-Talabat.Core/
-  Domain entities, repository contracts, specifications
-        |
-        v
-Talabat.Reposatory/
-  EF Core DbContexts, migrations, repositories, Unit of Work
-        |
-        v
-Talabat.Services/
-  Order, payment, token, and caching services
-        |
-        v
-  SQL Server + Redis + Stripe
+Talabat.Api/
+ Controllers, filters, API configuration, static files
+      | references
+      v
+Talabat.Infrastructure/ -----------------> Talabat.Application/
+ EF Core, repositories, migrations          Use cases, contracts, DTOs
+ Redis, Stripe, identity                         |
+      | references                               | references
+      +-------------------------> Talabat.Domain/
+                                   Entities and contracts
 ```
 
 ### Project responsibilities
 
 | Project | Responsibility |
 |---|---|
-| `Talabat` | API host, controllers, DTOs, authentication setup, middleware, and API documentation |
-| `Talabat.Core` | Domain entities, interfaces, and specifications |
-| `Talabat.Reposatory` | EF Core persistence, repository implementations, Unit of Work, migrations, and data seeding |
-| `Talabat.Services` | Order, payment, token, and cache services |
+| `Talabat.Domain` | Business entities, repository contracts, and query specifications |
+| `Talabat.Application` | Use cases, application contracts, API-facing DTOs, and mapping |
+| `Talabat.Infrastructure` | EF Core persistence, repository implementations, migrations, Redis, Stripe, and identity |
+| `Talabat.Api` | HTTP endpoints, authentication configuration, filters, static files, and API documentation |
+
+Dependencies point inward: the API composes Application and Infrastructure, Infrastructure implements the contracts, and Domain remains independent of persistence.
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - SQL Server
 - Redis
 - Stripe test credentials for payment-intent flows
@@ -72,16 +67,16 @@ From the repository root:
 
 ```bash
 dotnet restore Talabat.sln
-dotnet user-secrets init --project Talabat/Talabat.csproj
+dotnet user-secrets init --project Talabat.Api/Talabat.Api.csproj
 ```
 
 Configure secrets locally instead of committing them to `appsettings.json`:
 
 ```bash
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_SERVER_CONNECTION_STRING" --project Talabat/Talabat.csproj
-dotnet user-secrets set "ConnectionStrings:Identity" "YOUR_IDENTITY_DATABASE_CONNECTION_STRING" --project Talabat/Talabat.csproj
-dotnet user-secrets set "JwtSettings:SecretKey" "YOUR_LONG_RANDOM_JWT_SECRET" --project Talabat/Talabat.csproj
-dotnet user-secrets set "StripeSettings:Secretkey" "YOUR_STRIPE_TEST_SECRET_KEY" --project Talabat/Talabat.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_SQL_SERVER_CONNECTION_STRING" --project Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "ConnectionStrings:Identity" "YOUR_IDENTITY_DATABASE_CONNECTION_STRING" --project Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "JwtSettings:SecretKey" "YOUR_LONG_RANDOM_JWT_SECRET" --project Talabat.Api/Talabat.Api.csproj
+dotnet user-secrets set "StripeSettings:Secretkey" "YOUR_STRIPE_TEST_SECRET_KEY" --project Talabat.Api/Talabat.Api.csproj
 ```
 
 Make sure Redis is reachable at the configured `ConnectionStrings:Redis` address. The repository defaults this to `localhost`.
@@ -89,7 +84,14 @@ Make sure Redis is reachable at the configured `ConnectionStrings:Redis` address
 Start the API:
 
 ```bash
-dotnet run --project Talabat/Talabat.csproj
+dotnet run --project Talabat.Api/Talabat.Api.csproj
+```
+
+Create EF Core migrations in the Infrastructure project and use the API as the startup project:
+
+```bash
+dotnet ef migrations add <MigrationName> --project Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Talabat.Api/Talabat.Api.csproj --context StoreContext
+dotnet ef migrations add <MigrationName> --project Talabat.Infrastructure/Talabat.Infrastructure.csproj --startup-project Talabat.Api/Talabat.Api.csproj --context AppIdentityDbContext --output-dir Identity/Migrations
 ```
 
 On startup, the application attempts to apply EF Core migrations and seed sample data. The database connections must be configured and SQL Server must be available before relying on the seeded data.
@@ -105,7 +107,7 @@ In Development, OpenAPI is mapped by the application and Scalar is available for
 
 ## What This Project Demonstrates
 
-- Organizing a backend solution into domain, persistence, services, and API projects.
+- Organizing a backend solution into domain, application, infrastructure, and API projects.
 - Using repositories, Unit of Work, and specifications to structure data access.
 - Implementing identity, token-based authentication, caching, and rate limiting.
 - Connecting order workflows to payment-intent handling.
